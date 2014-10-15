@@ -4,8 +4,6 @@ date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
 require_once LIB_DIR . 'class.keyword.php';
 require_once LIB_DIR . 'class.proxy.php';
-
-/*
 $totalProcess = 50;
 for ($i = 0; $i < $totalProcess; $i++) {
     $pid = pcntl_fork();
@@ -23,9 +21,8 @@ for ($i = 0; $i < $totalProcess; $i++) {
          crawler();
     }
 }
-*/
 
-crawler();
+//crawler();
 
 function crawler() {
     $proxyObj = new proxy();
