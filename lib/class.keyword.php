@@ -6,40 +6,46 @@ class keyword {
 
     public function buildSearchUrl($data) {
         $kwd = $data['kwd'];
-        $date = $data['date'];
-        switch ($data['path']) {
-            case 'taobao':
-                $search_url = 'http://s.taobao.com/search?&initiative_id=tbindexz_'.$date.'&spm=1.7274553.1997520841.1&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&q='.$kwd.'&suggest=0_2';
-                if ($data['region']) {
-                    $search_url .= '&loc=' . urlencode($data['region']);
-                } 
-                if ($data['price_from'] || $data['price_to']) {
-                    $price_from = $data['price_from'] ? $data['price_from'] : '';
-                    $price_to = $data['price_to'] ? $data['price_to'] : '';
-                    $search_url .= '&filter=reserve_price' . urlencode("[".$price_from.",".$price_to."]");
-                }
-                break;
-            case 'taobao2tmall':
-                $search_url = 'http://s.taobao.com/search?spm=a230r.1.0.0.9nMSJu&initiative_id=tbindexz_'.$date.'&tab=mall&q='.$kwd.'&suggest=0_2'; 
-                if ($data['region']) {
-                    $search_url .= '&loc=' . urlencode($data['region']);
-                } 
-                if ($data['price_from'] || $data['price_to']) {
-                    $price_from = $data['price_from'] ? $data['price_from'] : '';
-                    $price_to = $data['price_to'] ? $data['price_to'] : '';
-                    $search_url .= '&filter=reserve_price' . urlencode("[".$price_from.",".$price_to."]");
-                }
-                break;
-            case 'tmall':
-                $search_url = 'http://list.tmall.com/search_product.htm?q='.$kwd.'&type=p&vmarket=&spm=3.7396704.a2227oh.d100&from=mallfp..pc_1_searchbutton';
-                if ($data['price_from']) {
-                    $search_url .= '&start_price=' . $data['price_from'];
-                }
-                if ($data['price_to']) {
-                    $search_url .= '&end_price=' . $data['price_to'];
-                }
-                break;
+        if ('tbpc' == $data['platform']) {
+            $date = $data['date'];
+            switch ($data['path']) {
+                case 'taobao':
+                    $search_url = 'http://s.taobao.com/search?&initiative_id=tbindexz_'.$date.'&spm=1.7274553.1997520841.1&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&q='.$kwd.'&suggest=0_2';
+                    if ($data['region']) {
+                        $search_url .= '&loc=' . urlencode($data['region']);
+                    } 
+                    if ($data['price_from'] || $data['price_to']) {
+                        $price_from = $data['price_from'] ? $data['price_from'] : '';
+                        $price_to = $data['price_to'] ? $data['price_to'] : '';
+                        $search_url .= '&filter=reserve_price' . urlencode("[".$price_from.",".$price_to."]");
+                    }
+                    break;
+                case 'taobao2tmall':
+                    $search_url = 'http://s.taobao.com/search?spm=a230r.1.0.0.9nMSJu&initiative_id=tbindexz_'.$date.'&tab=mall&q='.$kwd.'&suggest=0_2'; 
+                    if ($data['region']) {
+                        $search_url .= '&loc=' . urlencode($data['region']);
+                    } 
+                    if ($data['price_from'] || $data['price_to']) {
+                        $price_from = $data['price_from'] ? $data['price_from'] : '';
+                        $price_to = $data['price_to'] ? $data['price_to'] : '';
+                        $search_url .= '&filter=reserve_price' . urlencode("[".$price_from.",".$price_to."]");
+                    }
+                    break;
+                case 'tmall':
+                    $search_url = 'http://list.tmall.com/search_product.htm?q='.$kwd.'&type=p&vmarket=&spm=3.7396704.a2227oh.d100&from=mallfp..pc_1_searchbutton';
+                    if ($data['price_from']) {
+                        $search_url .= '&start_price=' . $data['price_from'];
+                    }
+                    if ($data['price_to']) {
+                        $search_url .= '&end_price=' . $data['price_to'];
+                    }
+                    break;
+            }
         }
+        elseif ('tbmobi' == $data['platform']) {
+            $search_url = 'http://s.m.taobao.com/h5?q='.$kwd.'&search-bton=&event_submit_do_new_search_auction=1&_input_charset=utf-8&topSearch=1&atype=b&searchfrom=1&action=home%3Aredirect_app_action&from=1';
+        }
+
         return $search_url;
     }
 

@@ -11,18 +11,21 @@ var title;
 var target;
 var res;
 
-var search_url = 'http://s.m.taobao.com/h5?q=bra&topSearch=1&from=1&abtest=9&sst=1';
-var search_selector = "div.d a[href*='36472252922']";
+var search_url = casper.cli.get(0);
+var search_selector = casper.cli.get(1);
+var sleep_time = parseInt(casper.cli.get(2)) * 1000;
 var logo_selector = "a";
 
 var sleep_time = 10;
 var search_times = 0;
+var i = 0;
 
 casper.start(search_url);
 casper.thenEvaluate(function(){
     document.body.scrollTop  = 0;
 });
 function search() {
+    i++;
     casper.thenEvaluate(function(){
         document.body.scrollTop  +=  500;
     });
@@ -41,7 +44,13 @@ function search() {
             });
         }
         else {
-            search();
+            if (i > 50) {
+                console.log("404");
+                casper.exit();
+            }
+            else {
+                search();
+            }
         } 
     });
 }

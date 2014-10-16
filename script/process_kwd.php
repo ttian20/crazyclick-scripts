@@ -55,7 +55,6 @@ function crawler() {
             $platform = $obj->platform;
             $table = 'keyword_' . $platform;
             $sql = "SELECT * FROM {$table} WHERE kid = {$obj->id} LIMIT 1";
-            echo $sql . "\n";
             $result = $mysqli->query($sql);
             $row = $result->fetch_object();
 
@@ -64,9 +63,8 @@ function crawler() {
             $date = date('Ymd');
             $sleep_time = $obj->sleep_time;
 
+            $jsfile = JS_DIR . $platform . '.js';
             if ('tbpc' == $platform) {
-                $jsfile = JS_DIR . $platform . '.js';
-
                 $path1 = (int)$row->path1;
                 $path2 = $path1 + (int)$row->path2;
                 $path3 = $path2 + (int)$row->path3;
@@ -80,6 +78,7 @@ function crawler() {
                     $data = array(
                         'path' => 'taobao',
                         'kwd' => $kwd,
+                        'platform' => $platform,
                         'date' => $date,
                         'region' => $row->path1_region,
                         'price_from' => $row->path1_price_from,
@@ -100,6 +99,7 @@ function crawler() {
                     $data = array(
                         'path' => 'taobao2tmall',
                         'kwd' => $kwd,
+                        'platform' => $platform,
                         'date' => $date,
                         'region' => $row->path2_region,
                         'price_from' => $row->path2_price_from,
@@ -120,6 +120,7 @@ function crawler() {
                     $data = array(
                         'path' => 'tmall',
                         'kwd' => $kwd,
+                        'platform' => $platform,
                         'date' => $date,
                         'region' => $row->path3_region,
                         'price_from' => $row->path3_price_from,
@@ -138,7 +139,19 @@ function crawler() {
                 }
             }
             elseif ('tbmobi' == $platform) {
+                $data = array(
+                    'kwd' => urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
+                    'platform' => $platform,
+                );
 
+                $proxy = $proxyObj->getProxy();
+
+                $keyword = new keyword();
+                $search_url = $keyword->buildSearchUrl($data);
+                $search_selector = "div.d a[href*='" . $nid . "']";
+                $next_selector = "a.ui-page-s-next";
+
+                $cmd = "/usr/bin/casperjs --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . $sleep_time ;
             }
 
             $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
@@ -146,8 +159,13 @@ function crawler() {
         }
     
         echo $cmd . "\n";
-        system($cmd);
-        $sql = "UPDATE keyword SET clicked_times = clicked_times + 1 WHERE id = " . $obj->id;
+        $output = system($cmd);
+        if ('404' == $output) {
+            $sql = "UPDATE keyword SET is_detected = -2 WHERE id = " . $obj->id;
+        }
+        else {
+            $sql = "UPDATE keyword SET clicked_times = clicked_times + 1 WHERE id = " . $obj->id;
+        }
         $mysqli->query($sql);
         echo $mysqli->error . "\n";
     }
