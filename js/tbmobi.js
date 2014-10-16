@@ -13,7 +13,6 @@ var res;
 
 var search_url = 'http://s.m.taobao.com/h5?q=bra&topSearch=1&from=1&abtest=9&sst=1';
 var search_selector = "div.d a[href*='36472252922']";
-//var search_selector = "div.d a";
 var logo_selector = "a";
 
 var sleep_time = 10;
