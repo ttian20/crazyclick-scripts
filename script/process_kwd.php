@@ -5,6 +5,7 @@ require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
 require_once LIB_DIR . 'class.keyword.php';
 require_once LIB_DIR . 'class.proxy.php';
 $totalProcess = 50;
+$totalProcess = 1;
 for ($i = 0; $i < $totalProcess; $i++) {
     $pid = pcntl_fork();
     set_time_limit(0);
@@ -45,6 +46,8 @@ function crawler() {
         if ($result) {
             $obj = $result->fetch_object();
             $result->close();
+            $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
+            $mysqli->query($sql);
         }
 
         if (!$obj || !$obj->id) {
@@ -56,6 +59,7 @@ function crawler() {
             $platform = $obj->platform;
             $table = 'keyword_' . $platform;
             $sql = "SELECT * FROM {$table} WHERE kid = {$obj->id} LIMIT 1";
+            echo $sql . "\n";
             $result = $mysqli->query($sql);
             $row = $result->fetch_object();
 
@@ -141,13 +145,13 @@ function crawler() {
 
             }
 
-            $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
-            $mysqli->query($sql);
+
         }
     
         echo $cmd . "\n";
         system($cmd);
         $sql = "UPDATE keyword SET clicked_times = clicked_times + 1 WHERE id = " . $obj->id;
         $mysqli->query($sql);
+        echo $mysqli->error . "\n";
     }
 }
