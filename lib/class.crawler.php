@@ -236,10 +236,10 @@ class crawler {
             $sqlArr[] = $k . " = '" . $v . "'"; 
         }
         $sqlStr = implode(',', $sqlArr);
-        if ($page != -1) {
-            $sql = "UPDATE keyword_{$data['platform']} SET " . $sqlStr . " WHERE kid = {$data['id']}";
-            echo $sql . "\n";
-        }
+        //if ($page != -1) {
+        $sql = "UPDATE keyword_{$data['platform']} SET " . $sqlStr . " WHERE kid = {$data['id']}";
+        echo $sql . "\n";
+        //}
         $this->db->query($sql);
     }
 }

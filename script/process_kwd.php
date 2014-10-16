@@ -5,7 +5,6 @@ require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
 require_once LIB_DIR . 'class.keyword.php';
 require_once LIB_DIR . 'class.proxy.php';
 $totalProcess = 50;
-$totalProcess = 1;
 for ($i = 0; $i < $totalProcess; $i++) {
     $pid = pcntl_fork();
     set_time_limit(0);
@@ -37,17 +36,14 @@ function crawler() {
 
         $hms = date('H:i:s');
         $sql = "SELECT * FROM keyword "
-             . "WHERE status = 'active' AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
+             . "WHERE status = 'active' AND is_detected = 1 AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
              . "AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) ORDER BY last_click_time ASC LIMIT 1";
-        //echo $sql."\n";
-        //exit;
         $result = $mysqli->query($sql);
         $data = array();
         if ($result) {
             $obj = $result->fetch_object();
             $result->close();
-            $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
-            $mysqli->query($sql);
+
         }
 
         if (!$obj || !$obj->id) {
@@ -89,7 +85,7 @@ function crawler() {
                         'price_from' => $row->path1_price_from,
                         'price_to' => $row->path1_price_to,
                     );
-                    if ($row->path1_page >= 5) {
+                    if ($row->path1_page >= 11 || $row->path1_page == -1) {
                         continue;
                     }
                     $proxy = $proxyObj->getProxy();
@@ -109,7 +105,7 @@ function crawler() {
                         'price_from' => $row->path2_price_from,
                         'price_to' => $row->path2_price_to,
                     );
-                    if ($row->path2_page >= 5) {
+                    if ($row->path2_page >= 11 || $row->path2_page == -1) {
                         continue;
                     }
                     $proxy = $proxyObj->getProxy();
@@ -129,7 +125,7 @@ function crawler() {
                         'price_from' => $row->path3_price_from,
                         'price_to' => $row->path3_price_to,
                     );
-                    if ($row->path3_page >= 5) {
+                    if ($row->path3_page >= 11 || $row->path3_page == -1) {
                         continue;
                     }
                     $proxy = $proxyObj->getProxy(true);
@@ -145,7 +141,8 @@ function crawler() {
 
             }
 
-
+            $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
+            $mysqli->query($sql);
         }
     
         echo $cmd . "\n";
