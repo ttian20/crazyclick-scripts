@@ -45,6 +45,9 @@ function crawler() {
             $result->close();
 
         }
+        
+        $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
+        $mysqli->query($sql);
 
         if (!$obj || !$obj->id) {
             echo "zz\n";
@@ -154,8 +157,7 @@ function crawler() {
                 $cmd = "/usr/bin/casperjs --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . $sleep_time ;
             }
 
-            $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
-            $mysqli->query($sql);
+
         }
     
         echo $cmd . "\n";
