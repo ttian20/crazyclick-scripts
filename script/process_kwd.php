@@ -43,11 +43,10 @@ function crawler() {
         if ($result) {
             $obj = $result->fetch_object();
             $result->close();
-
         }
         
-        $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
-        $mysqli->query($sql);
+        //$sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
+        //$mysqli->query($sql);
 
         if (!$obj || !$obj->id) {
             echo "zz\n";
@@ -55,6 +54,21 @@ function crawler() {
             continue ;
         }
         else {
+            $mysqli->begin_transaction();
+            $sql = "SELECT * FROM keyword WHERE id = {$obj->id} AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) FOR UPDATE";
+            $result = $mysqli->query($sql);
+            $obj = $result->fetch_object();
+            if ($obj) {
+                $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
+                $mysqli->query($sql);
+                $mysqli->commit();
+            }
+            else {
+                $mysqli->rollback();
+                sleep(1);
+                continue;
+            }
+
             $platform = $obj->platform;
             $table = 'keyword_' . $platform;
             $sql = "SELECT * FROM {$table} WHERE kid = {$obj->id} LIMIT 1";
