@@ -48,7 +48,7 @@ class crawler {
             unset($tmpdata['price_from']);
             unset($tmpdata['price_to']);
             unset($tmpdata['region']);
-            $url = $this->kwdObj->buildSearchUrl($data);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = $this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
@@ -60,12 +60,16 @@ class crawler {
             //单纯价格作搜索条件
             $tmpdata = $data;
             unset($tmpdata['region']);
-            $url = $this->kwdObj->buildSearchUrl($data);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = $this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
-            if ($page < $minPage) {
+            if ($minPage == -1 && $page > 0) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            if ($page > 0 && $page < $minPage) {
                 $minPage = $page;
                 $selected = $tmpdata;
             }
@@ -75,12 +79,16 @@ class crawler {
             $tmpdata = $data;
             unset($tmpdata['price_from']);
             unset($tmpdata['price_to']);
-            $url = $this->kwdObj->buildSearchUrl($data);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = $this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
-            if ($page < $minPage) {
+            if ($minPage == -1 && $page > 0) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            if ($page > 0 && $page < $minPage) {
                 $minPage = $page;
                 $selected = $tmpdata;
             }
@@ -88,10 +96,14 @@ class crawler {
 
             //地区和价格同时作搜索条件
             $tmpdata = $data;
-            $url = $this->kwdObj->buildSearchUrl($data);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = $this->getPage($url);
             $this->update($tmpdata, $page);
-            if ($page < $minPage) {
+            if ($minPage == -1 && $page > 0) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            if ($page > 0 && $page < $minPage) {
                 $minPage = $page;
                 $selected = $tmpdata;
             }
@@ -106,6 +118,7 @@ class crawler {
 
     public function getPage($url, $i = 1) {
         $curl = new Curl(); 
+        echo $url . "\n";
         //$curl->get($url, array(), $this->proxy);
         $curl->get($url, array());
         $curl->setUserAgent($this->getUserAgent());
@@ -134,7 +147,8 @@ class crawler {
                 //echo strpos($body, 'page-next');
                 //echo $body;
                 if (!$match[1][0]) {
-                    print_r($match);
+                    //print_r($match);
+                    //echo $body . "\n";
                     return -1;
                 }
                 $url = $this->taobaoSearchBaseUrl . $match[1][0];
@@ -236,10 +250,13 @@ class crawler {
             $sqlArr[] = $k . " = '" . $v . "'"; 
         }
         $sqlStr = implode(',', $sqlArr);
-        //if ($page != -1) {
         $sql = "UPDATE keyword_{$data['platform']} SET " . $sqlStr . " WHERE kid = {$data['id']}";
         echo $sql . "\n";
-        //}
         $this->db->query($sql);
+        if ($page != -1) {
+            $sql = "UPDATE keyword SET is_detected = 1 WHERE id = {$data['id']}";
+            echo $sql . "\n";
+            $this->db->query($sql);
+        }
     }
 }

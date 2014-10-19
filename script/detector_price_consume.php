@@ -21,6 +21,7 @@ $queue = new AMQPQueue($channel);
 $queue->setName($queueName);
 
 $detector = new detector();
+$i = 0;
 while ($message = $queue->get(AMQP_AUTOACK)) {
     $kwd = $message->getBody();
     $kwdObj = unserialize($kwd);
@@ -37,6 +38,7 @@ while ($message = $queue->get(AMQP_AUTOACK)) {
         echo $sql . "\n";
         $mysqli->query($sql);
     }
+    sleep(2);
 }
 $conn->disconnect();
 exit;

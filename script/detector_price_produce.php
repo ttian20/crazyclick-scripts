@@ -15,6 +15,11 @@ $sql = "SELECT * FROM keyword WHERE status = 'active'";
 if ($kid) {
     $sql .= " AND id = {$kid}";
 }
+else {
+    $sql .= " AND id NOT IN (SELECT kid FROM price)";
+}
+//$sql .= " LIMIT 10";
+echo $sql . "\n";
 $result = $mysqli->query($sql);
 if (!$result) {
     exit("no record\n");

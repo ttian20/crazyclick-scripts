@@ -16,11 +16,12 @@ $mysqli->query('SET NAMES gbk');
 $sql = "SELECT k.*, tb.path1, tb.path2, tb.path3, p.min_price, p.region FROM keyword k "
      . "INNER JOIN keyword_tbpc tb ON tb.kid = k.id "
      . "INNER JOIN price p ON p.kid = k.id "
-     . "WHERE k.status = 'active'";
-echo $sql . "\n";
+     . "WHERE k.status = 'active' AND k.is_detected = 0";
 if ($kid) {
     $sql .= " AND k.id = {$kid}";
 }
+//$sql .= " LIMIT 10";
+echo $sql . "\n";
 $result = $mysqli->query($sql);
 if (!$result) {
     exit("no record\n");
