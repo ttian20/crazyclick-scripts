@@ -54,7 +54,7 @@ function crawler() {
             continue ;
         }
         else {
-            $mysqli->begin_transaction();
+            $mysqli->autocommit(0);
             $sql = "SELECT * FROM keyword WHERE id = {$obj->id} AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) FOR UPDATE";
             $result = $mysqli->query($sql);
             $obj = $result->fetch_object();
@@ -62,9 +62,11 @@ function crawler() {
                 $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
                 $mysqli->query($sql);
                 $mysqli->commit();
+                $mysqli->autocommit(1);
             }
             else {
                 $mysqli->rollback();
+                $mysqli->autocommit(1);
                 sleep(1);
                 continue;
             }
