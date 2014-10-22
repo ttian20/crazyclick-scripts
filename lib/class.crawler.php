@@ -9,6 +9,7 @@ class crawler {
     public $userAgent = null;
     public $kwdObj = null;
     public $taobaoSearchBaseUrl = 'http://s.taobao.com/';
+    public $tmallSearchBaseUrl = 'http://list.tmall.com/search_product.htm';
     public $db = null;
     public function __construct() {
         $this->kwdObj = new keyword();
@@ -34,7 +35,39 @@ class crawler {
         $selected = array();
 
         if ($data['path'] == 'tmall') {
+            //2种条件搜索
+            //1. 无附加搜索条件
+            //2. 单纯价格作搜索条件
+            $proxyObj = new proxy();
+            $this->proxy = $proxyObj->getProxy(true);
 
+            //无附加搜索条件
+            $tmpdata = $data;
+            unset($tmpdata['price_from']);
+            unset($tmpdata['price_to']);
+            unset($tmpdata['region']);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            $page = $this->getTmallPage($url);
+            $this->update($tmpdata, $page);
+            $minPage = $page;
+            $selected = $tmpdata;
+            sleep(1);
+
+            //单纯价格作搜索条件
+            $tmpdata = $data;
+            unset($tmpdata['region']);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            $page = $this->getTmallPage($url);
+            $this->update($tmpdata, $page);
+            if ($minPage == -1 && $page > 0) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            if ($page > 0 && $page < $minPage) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            $this->specify($selected, $minPage);
         }
         else {
             //4种条件搜索
@@ -42,6 +75,8 @@ class crawler {
             //2. 单纯价格作搜索条件
             //3. 单纯地区作搜索条件
             //4  地区和价格同时作搜索条件
+            $proxyObj = new proxy();
+            $this->proxy = $proxyObj->getProxy();
 
             //无附加搜索条件
             $tmpdata = $data;
@@ -119,8 +154,7 @@ class crawler {
     public function getPage($url, $i = 1) {
         $curl = new Curl(); 
         echo $url . "\n";
-        //$curl->get($url, array(), $this->proxy);
-        $curl->get($url, array());
+        $curl->get($url, array(), $this->proxy);
         $curl->setUserAgent($this->getUserAgent());
         echo $curl->http_status_code . "\n";
         if (200 == $curl->http_status_code) {
@@ -158,6 +192,53 @@ class crawler {
                 echo $i . " not found\n";
                 return $this->getPage($url, $i);
             }
+        }
+        else {
+            echo $curl->response . "\n";
+            print_r($curl->response_headers);
+            return -1;
+        }
+    }
+
+    public function getTmallPage($url, $i = 1) {
+        echo $url . "\n";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->getUserAgent()); 
+        curl_setopt($ch, CURLOPT_PROXY, $this->proxy); 
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20); 
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 
+        $info = curl_exec($ch);
+        if(curl_errno($ch))
+        {
+            echo curl_error($ch);
+            $proxyObj = new proxy();
+            $this->proxy = $proxyObj->getProxy(true);
+            return $this->getTmallPage($url, $i);
+        }
+
+
+        $body = $info;
+        $findme = 'data-id=" ' . $this->nid . '"';
+        if (strpos($body, $findme)) {
+            return $i;
+        }
+        else {
+            if ($i >= 20) {
+                return -1;
+            }
+            $nextPagePattern = "/<a href=\"(.*?)\" class=\"ui-page-s-next\" atpanel/i";
+            preg_match_all($nextPagePattern, $body, $match);
+            if (!$match[1][0]) {
+                //print_r($match);
+                return -1;
+            }
+            $url = $this->tmallSearchBaseUrl . html_entity_decode($match[1][0]);
+            $i++;
+            echo $i . " not found\n";
+            return $this->getTmallPage($url, $i);
         }
     }
 

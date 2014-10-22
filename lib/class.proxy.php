@@ -17,6 +17,28 @@ class proxy {
             $queueName = 'q_proxy';
             $routerName = 'proxy';
         }
+
+        $params = array('host' =>'10.168.45.191',  
+                        'port' => 5672,  
+                        'login' => 'guest',  
+                        'password' => 'guest',  
+                        'vhost' => '/kwd');  
+
+        $conn = new AMQPConnection($params);  
+        $conn->connect();
+        $channel = new AMQPChannel($conn);
+        $exchange = new AMQPExchange($channel);
+        $exchange->setName($exchangeName);
+
+        $queue = new AMQPQueue($channel);
+        $queue->setFlags(AMQP_PASSIVE);
+        $queue->setName($queueName);
+        $messageCount = $queue->declareQueue();
+        if ($messageCount >= 1500) {
+            echo $messageCount . "\n";
+            return ;
+        }
+
         $userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.2; .NET4.0C; .NET4.0E)';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);

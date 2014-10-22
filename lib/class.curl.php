@@ -32,6 +32,7 @@ class Curl {
     public $response_headers = null;
     public $response = null;
     public $raw_response = null;
+    public $follow_location = false;
 
     public function __construct()
     {
@@ -45,6 +46,11 @@ class Curl {
         $this->setOpt(CURLOPT_HEADER, true);
         $this->setOpt(CURLOPT_RETURNTRANSFER, true);
         $this->setOpt(CURLOPT_TIMEOUT, 5);
+    }
+
+    public function allow_redirect()
+    {
+        $this->follow_location = true;
     }
 
     public function get($url_mixed, $data = array(), $proxy = null)
@@ -101,6 +107,9 @@ class Curl {
             $this->setopt(CURLOPT_HTTPGET, true);
             if ($proxy) {
                 $this->setopt(CURLOPT_PROXY, $proxy);
+            }
+            if ($this->follow_location) {
+                $this->setopt(CURLOPT_FOLLOWLOCATION, true);
             }
             return $this->exec();
         }

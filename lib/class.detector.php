@@ -16,8 +16,8 @@ class detector {
     }
 
     public function getTmallPrice($kwd) {
-//        $proxyObj = new proxy();
-//        $proxy = $proxyObj->getProxy(true);
+        //$proxyObj = new proxy();
+        //$proxy = $proxyObj->getProxy(true);
 
         $url = 'http://detail.tmall.com/item.htm?id=' . $kwd->nid;
         $ch = curl_init();
@@ -25,7 +25,7 @@ class detector {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
-//        curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
         curl_close($ch);
@@ -39,6 +39,7 @@ class detector {
         curl_setopt($ch, CURLOPT_URL, $detail_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
+        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_REFERER, $url);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
@@ -76,12 +77,15 @@ class detector {
     }
 
     public function getTaobaoPrice($kwd) {
+        //$proxyObj = new proxy();
+        //$proxy = $proxyObj->getProxy();
         $url = 'http://item.taobao.com/item.htm?id=' . $kwd->nid;
         $user_agent = $this->getUserAgent();
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
         curl_close($ch);
@@ -100,6 +104,7 @@ class detector {
         curl_setopt($ch, CURLOPT_URL, $detail_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_REFERER, $url);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
