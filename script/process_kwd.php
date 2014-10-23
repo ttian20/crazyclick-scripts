@@ -4,6 +4,7 @@ date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
 require_once LIB_DIR . 'class.keyword.php';
 require_once LIB_DIR . 'class.proxy.php';
+
 $totalProcess = 50;
 for ($i = 0; $i < $totalProcess; $i++) {
     $pid = pcntl_fork();
@@ -54,6 +55,15 @@ function crawler() {
             continue ;
         }
         else {
+
+            $sql = "UPDATE keyword SET clicked_times = clicked_times + 1, last_click_time = {$current} WHERE id = {$obj->id} AND clicked_times < times AND ((last_click_time + click_interval) < {$current})";
+            $mysqli->query($sql);
+            echo 'affect ' . $mysqli->affected_rows . "\n";
+            if (!$mysqli->affected_rows) {
+                continue;
+            }
+
+            /*
             $mysqli->autocommit(0);
             $sql = "SELECT * FROM keyword WHERE id = {$obj->id} AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) FOR UPDATE";
             $result = $mysqli->query($sql);
@@ -70,6 +80,7 @@ function crawler() {
                 sleep(1);
                 continue;
             }
+            */
 
             $platform = $obj->platform;
             $table = 'keyword_' . $platform;
@@ -179,12 +190,9 @@ function crawler() {
         echo $cmd . "\n";
         $output = system($cmd);
         if ('404' == $output) {
-            $sql = "UPDATE keyword SET is_detected = -2 WHERE id = " . $obj->id;
+            $sql = "UPDATE keyword SET is_detected = -2, clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
+            $mysqli->query($sql);
+            echo $mysqli->error . "\n";
         }
-        else {
-            $sql = "UPDATE keyword SET clicked_times = clicked_times + 1 WHERE id = " . $obj->id;
-        }
-        $mysqli->query($sql);
-        echo $mysqli->error . "\n";
     }
 }

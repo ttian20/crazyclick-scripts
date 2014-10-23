@@ -84,7 +84,7 @@ class crawler {
             unset($tmpdata['price_to']);
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = $this->getPage($url);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -96,7 +96,7 @@ class crawler {
             $tmpdata = $data;
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = $this->getPage($url);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -115,7 +115,7 @@ class crawler {
             unset($tmpdata['price_from']);
             unset($tmpdata['price_to']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = $this->getPage($url);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -132,7 +132,7 @@ class crawler {
             //地区和价格同时作搜索条件
             $tmpdata = $data;
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = $this->getPage($url);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             if ($minPage == -1 && $page > 0) {
                 $minPage = $page;
@@ -315,13 +315,13 @@ class crawler {
         }
 
         $upData = array();
-        if (isset($data['region'])) {
+        if (isset($data['region']) && $data['region']) {
             $upData[$path . '_region'] = $data['region']; 
         }
-        if (isset($data['price_from'])) {
+        if (isset($data['price_from']) && $data['price_from']) {
             $upData[$path . '_price_from'] = $data['price_from']; 
         }
-        if (isset($data['price_to'])) {
+        if (isset($data['price_to']) && $data['price_to']) {
             $upData[$path . '_price_to'] = $data['price_to']; 
         }
         $upData[$path . '_page'] = $page;

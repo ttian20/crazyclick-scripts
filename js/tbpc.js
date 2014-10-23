@@ -53,6 +53,7 @@ function search(flag) {
         }
         else {
             if (search_times >= 10) {
+                console.log('404');
                 casper.exit();
             }
             else {
@@ -87,6 +88,7 @@ if (shop_type == 'b') {
             });
         }
         else {
+            console.log('405');
             casper.exit();
         }
     });
@@ -114,6 +116,7 @@ if (shop_type == 'b') {
             });
         }
         else {
+            console.log('406');
             casper.exit();
         }
     });
@@ -132,12 +135,14 @@ if (shop_type == 'b') {
             });
         }
         else {
+            console.log('407');
             casper.exit();
         }
     });
     
     casper.then(function(){
         console.log(this.getCurrentUrl()); 
+        console.log('200');
         casper.exit();
     });
 }
@@ -160,6 +165,7 @@ else {
             });
         }
         else {
+            console.log('405');
             casper.exit();
         }
     });
@@ -187,6 +193,7 @@ else {
             });
         }
         else {
+            console.log('406');
             casper.exit();
         }
     });
@@ -205,12 +212,14 @@ else {
             });
         }
         else {
+            console.log('407');
             casper.exit();
         }
     });
     
     casper.then(function(){
         console.log(this.getCurrentUrl()); 
+        console.log('200');
         casper.exit();
     });
 }
