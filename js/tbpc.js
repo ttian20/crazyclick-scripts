@@ -26,7 +26,7 @@ function search(flag) {
         casper.wait(1000, function(){
             this.click(next_selector);
         });
-        console.log(search_times);
+        //console.log(search_times);
     }
     casper.then(function(){
         if (this.exists(search_selector)) {
@@ -35,18 +35,17 @@ function search(flag) {
                 var arr = new Array();
                 arr[0] = document.querySelector(f).getAttribute('target');
                 arr[1] = document.querySelector(f).getAttribute('href');
-                //return document.querySelector(f).getAttribute('target');
                 return arr;
             }, search_selector);
-            console.log(res[0]);
-            console.log(res[1]);
+            //console.log(res[0]);
+            //console.log(res[1]);
             if (res[1].indexOf("detail.tmall.com/") != -1) {
                 shop_type = 'b';
             }
             else {
                 shop_type = 'c';
             }
-            console.log(shop_type);
+            //console.log(shop_type);
             this.wait(1000, function(){
                 this.click(search_selector);
             });
@@ -79,8 +78,9 @@ if (shop_type == 'b') {
     
             return document.title;
         });
-        console.log(title);
-        console.log(this.getCurrentUrl()); 
+        //console.log(title);
+        //console.log(this.getCurrentUrl()); 
+        //console.log('200-1');
     
         if (this.exists(".slogo-shopname")) {
             this.wait(sleep_time, function(){
@@ -88,7 +88,7 @@ if (shop_type == 'b') {
             });
         }
         else {
-            console.log('405');
+            console.log('200-405');
             casper.exit();
         }
     });
@@ -101,8 +101,8 @@ if (shop_type == 'b') {
             }
             return document.title;
         });
-        console.log(title);
-        console.log(this.getCurrentUrl()); 
+        //console.log(title);
+        //console.log(this.getCurrentUrl()); 
     
         /*if (this.exists("a[href*='tmall.com/p/']")) {
             this.wait(10000, function(){
@@ -116,7 +116,7 @@ if (shop_type == 'b') {
             });
         }
         else {
-            console.log('406');
+            console.log('200-406');
             casper.exit();
         }
     });
@@ -135,7 +135,7 @@ if (shop_type == 'b') {
             });
         }
         else {
-            console.log('407');
+            console.log('200-407');
             casper.exit();
         }
     });
@@ -156,8 +156,8 @@ else {
     
             return document.title;
         });
-        console.log(title);
-        console.log(this.getCurrentUrl()); 
+        //console.log(title);
+        //console.log(this.getCurrentUrl()); 
     
         if (this.exists(".tb-shop-name a")) {
             this.wait(sleep_time, function(){
@@ -165,7 +165,7 @@ else {
             });
         }
         else {
-            console.log('405');
+            console.log('200-405');
             casper.exit();
         }
     });
@@ -178,14 +178,8 @@ else {
             }
             return document.title;
         });
-        console.log(title);
-        console.log(this.getCurrentUrl()); 
-    
-        /*if (this.exists("a[href*='tmall.com/p/']")) {
-            this.wait(10000, function(){
-                this.click("a[href*='tmall.com/p/']");
-            });
-        }*/
+        //console.log(title);
+        //console.log(this.getCurrentUrl()); 
     
         if (this.exists("a[href*='taobao.com/category.htm']")) {
             this.wait(10000, function(){
@@ -193,7 +187,7 @@ else {
             });
         }
         else {
-            console.log('406');
+            console.log('200-406');
             casper.exit();
         }
     });
@@ -212,7 +206,7 @@ else {
             });
         }
         else {
-            console.log('407');
+            console.log('200-407');
             casper.exit();
         }
     });

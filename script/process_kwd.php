@@ -193,11 +193,18 @@ function crawler() {
     
         echo $cmd . "\n";
         $output = system($cmd);
-        if ('404' == $output) {
-            $sql = "UPDATE keyword SET is_detected = -2, clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
+        $status_code = substr($output, 0, 3);
+        if ('200' != $status_code) {
+            if ('404' == $status_code) {
+                $sql = "UPDATE keyword SET is_detected = -2, clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
+            }
+            else {
+                $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
+            }
             $mysqli->query($sql);
             echo $mysqli->error . "\n";
         }
+
         $sql = "INSERT INTO click_log (kid, path, log, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', " . time(). ")";
         $mysqli->query($sql);
     }
