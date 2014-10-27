@@ -105,6 +105,7 @@ function crawler() {
                 $rand = rand(1, 100);
                 if ($rand <= $path1) {
                     //taobao search
+                    $path = 'taobao';
                     $data = array(
                         'path' => 'taobao',
                         'kwd' => $kwd,
@@ -126,6 +127,7 @@ function crawler() {
                 }
                 elseif ($rand <= $path2) {
                     //taobao search tmall tab
+                    $path = 'taobao2tmall';
                     $data = array(
                         'path' => 'taobao2tmall',
                         'kwd' => $kwd,
@@ -147,6 +149,7 @@ function crawler() {
                 }
                 else {
                     //tmall search
+                    $path = 'tmall';
                     $data = array(
                         'path' => 'tmall',
                         'kwd' => $kwd,
@@ -169,6 +172,7 @@ function crawler() {
                 }
             }
             elseif ('tbmobi' == $platform) {
+                $path = 'mobi';
                 $data = array(
                     'kwd' => urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
                     'platform' => $platform,
@@ -194,5 +198,7 @@ function crawler() {
             $mysqli->query($sql);
             echo $mysqli->error . "\n";
         }
+        $sql = "INSERT INTO click_log (kid, path, log, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', " . time(). ")";
+        $mysqli->query($sql);
     }
 }
