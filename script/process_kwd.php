@@ -120,8 +120,8 @@ function crawler() {
                     }
                     $proxy = $proxyObj->getProxy();
                     $search_url = $keyword->buildSearchUrl($data);
-                    $search_selector = ".item[nid='" . $nid . "'] h3 a";
-                    $next_selector = ".page-next";
+                    $search_selector = ".row-2 a[href*='id=".$nid."']";
+                    $next_selector = 'a[trace="srp_bottom_pagedown"]';
                 
                     $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
                 }
@@ -142,8 +142,8 @@ function crawler() {
                     }
                     $proxy = $proxyObj->getProxy();
                     $search_url = $keyword->buildSearchUrl($data);
-                    $search_selector = ".item[nid='" . $nid . "'] h3 a";
-                    $next_selector = ".page-next";
+                    $search_selector = ".row-2 a[href*='id=".$nid."']";
+                    $next_selector = 'a[trace="srp_bottom_pagedown"]';
                 
                     $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
                 }
