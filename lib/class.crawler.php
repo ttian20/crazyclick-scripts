@@ -159,7 +159,8 @@ class crawler {
         echo $curl->http_status_code . "\n";
         if (200 == $curl->http_status_code) {
             $body = $curl->response;
-            $findme = 'nid="' . $this->nid . '"';
+            $findme = '"nid":"' . $this->nid . '"';
+            //echo $body . "\n";
             //echo $findme . "\n";
             //var_dump(strpos($body, $findme));
             //echo "\n";

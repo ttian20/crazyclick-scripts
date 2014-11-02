@@ -90,6 +90,7 @@ class detector {
         $info = curl_exec($ch);
         curl_close($ch);
         $content = trim($info);
+        //echo $content . "\n";
         
         $end_price_pattern = '/price:([.0-9]+?),/';
         preg_match_all($end_price_pattern, $content, $matches);
@@ -121,13 +122,23 @@ class detector {
                 }
             }
         }
-        $region_pattern = "/location:'(.*?)',/";
+        $region_pattern = "/\"sendCity\":\"(.*?)\",/";
         preg_match_all($region_pattern, $content, $matches);
         $region = '';
         if ($matches) {
             $region = $matches[1][0];
             $provinces = $this->getProvinces();
             $region = str_replace($provinces, '', $region);
+        }
+        else {
+            $region_pattern = "/location:'(.*?)',/";
+            preg_match_all($region_pattern, $content, $matches);
+            $region = '';
+            if ($matches) {
+                $region = $matches[1][0];
+                $provinces = $this->getProvinces();
+                $region = str_replace($provinces, '', $region);
+            }
         }
         return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region);
     }

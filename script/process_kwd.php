@@ -116,6 +116,7 @@ function crawler() {
                         'price_to' => $row->path1_price_to,
                     );
                     if ($row->path1_page >= 11 || $row->path1_page == -1) {
+                        cutback($mysqli, $obj);
                         continue;
                     }
                     $proxy = $proxyObj->getProxy();
@@ -138,6 +139,7 @@ function crawler() {
                         'price_to' => $row->path2_price_to,
                     );
                     if ($row->path2_page >= 11 || $row->path2_page == -1) {
+                        cutback($mysqli, $obj);
                         continue;
                     }
                     $proxy = $proxyObj->getProxy();
@@ -160,6 +162,7 @@ function crawler() {
                         'price_to' => $row->path3_price_to,
                     );
                     if ($row->path3_page >= 11 || $row->path3_page == -1) {
+                        cutback($mysqli, $obj);
                         continue;
                     }
                     $proxy = $proxyObj->getProxy(true);
@@ -187,8 +190,6 @@ function crawler() {
 
                 $cmd = "/usr/bin/casperjs --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . $sleep_time ;
             }
-
-
         }
     
         echo $cmd . "\n";
@@ -211,4 +212,9 @@ function crawler() {
         $sql = "INSERT INTO click_log (kid, path, log, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', " . time(). ")";
         $mysqli->query($sql);
     }
+}
+
+function cutback($mysqli, $obj) {
+    $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id; 
+    $mysqli->query($sql); 
 }
