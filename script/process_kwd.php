@@ -168,7 +168,7 @@ function crawler() {
                     $proxy = $proxyObj->getProxy(true);
     
                     $search_url = $keyword->buildSearchUrl($data);
-                    $search_selector = ".product[data-id=' " . $nid . "'] div .productTitle a";
+                    $search_selector = ".product[data-id='" . $nid . "'] div .productTitle a";
                     $next_selector = "a.ui-page-s-next";
     
                     $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
