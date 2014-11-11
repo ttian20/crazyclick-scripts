@@ -186,6 +186,11 @@ else {
                 this.click("a[href*='taobao.com/category.htm']");
             });
         }
+        else if (this.exists("a[href*='taobao.com/category-']")) {
+            this.wait(10000, function(){
+                this.click("a[href*='taobao.com/category-']");
+            });
+        }
         else {
             console.log('200-406');
             casper.exit();
