@@ -5,7 +5,7 @@ require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
 require_once LIB_DIR . 'class.keyword.php';
 require_once LIB_DIR . 'class.proxy.php';
 
-$totalProcess = 5;
+$totalProcess = 50;
 for ($i = 0; $i < $totalProcess; $i++) {
     $pid = pcntl_fork();
     set_time_limit(0);
@@ -36,7 +36,9 @@ function crawler() {
         $current = time();
 
         $hms = date('H:i:s');
-        $sql = "SELECT * FROM keyword WHERE status = 'active' AND is_detected = 1 AND nid IN ('37290532374', '20265741507') ORDER BY last_click_time ASC LIMIT 1";
+        $sql = "SELECT * FROM keyword "
+             . "WHERE status = 'active' AND is_detected = 1 AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
+             . "AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) ORDER BY last_click_time ASC LIMIT 1";
         $result = $mysqli->query($sql);
         $data = array();
         if ($result) {
@@ -53,7 +55,8 @@ function crawler() {
             continue ;
         }
         else {
-            $sql = "UPDATE keyword SET clicked_times = clicked_times + 1, last_click_time = {$current} WHERE id = {$obj->id} AND clicked_times < times";
+
+            $sql = "UPDATE keyword SET clicked_times = clicked_times + 1, last_click_time = {$current} WHERE id = {$obj->id} AND clicked_times < times AND ((last_click_time + click_interval) < {$current})";
             $mysqli->query($sql);
             echo 'affect ' . $mysqli->affected_rows . "\n";
             if (!$mysqli->affected_rows) {
@@ -203,6 +206,7 @@ function crawler() {
             */
             $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
             $mysqli->query($sql);
+
             echo $mysqli->error . "\n";
         }
 
