@@ -22,11 +22,13 @@ class crawler {
         $priceStr = explode(".", $data['price']);
         if ($priceStr[1] = '00') {
             $data['price_from'] = $priceStr[0];
-            $data['price_to'] = $priceStr[0] + 1;
+            #$data['price_to'] = $priceStr[0] + 1;
+            $data['price_to'] = $priceStr[0] + 10;
         }
         else {
             $data['price_from'] = floor($priceStr[0]);
-            $data['price_to'] = floor($priceStr[0]) + 1;
+            #$data['price_to'] = floor($priceStr[0]) + 1;
+            $data['price_to'] = floor($priceStr[0]) + 10;
         }
         $data['date'] = date('Ymd');
         $data['kwd'] = urlencode($data['kwd']);
@@ -211,18 +213,21 @@ class crawler {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
         curl_setopt($ch, CURLOPT_TIMEOUT, 20); 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 
-        $info = curl_exec($ch);
+        $body = curl_exec($ch);
+        $info = curl_getinfo($ch);
+        print_r($info);
+
         if(curl_errno($ch))
         {
             echo curl_error($ch);
             $proxyObj = new proxy();
             $this->proxy = $proxyObj->getProxy(true);
+            curl_close($ch);
             return $this->getTmallPage($url, $i);
         }
+        curl_close($ch);
 
-
-        $body = $info;
-        $findme = 'data-id=" ' . $this->nid . '"';
+        $findme = 'data-id="' . $this->nid . '"';
         if (strpos($body, $findme)) {
             return $i;
         }
