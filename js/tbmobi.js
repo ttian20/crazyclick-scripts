@@ -39,7 +39,8 @@ function search() {
             console.log(title);
 
             this.wait(2000, function(){
-                console.log("here");
+                //console.log("here");
+                console.log("200");
                 this.click(logo_selector);
             });
         }
