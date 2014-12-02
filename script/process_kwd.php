@@ -213,7 +213,7 @@ function crawler() {
             echo $mysqli->error . "\n";
         }
 
-        $sql = "INSERT INTO click_log (kid, path, log, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', " . time(). ")";
+        $sql = "INSERT INTO click_log (kid, path, log, proxy, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', '{$proxy}', " . time(). ")";
         $mysqli->query($sql);
     }
 }
