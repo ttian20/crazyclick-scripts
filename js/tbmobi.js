@@ -18,14 +18,12 @@ var logo_selector = "a";
 
 var sleep_time = 10;
 var search_times = 0;
-var i = 0;
 
 casper.start(search_url);
 casper.thenEvaluate(function(){
     document.body.scrollTop  = 0;
 });
 function search() {
-    i++;
     casper.thenEvaluate(function(){
         document.body.scrollTop  +=  500;
     });
@@ -39,17 +37,17 @@ function search() {
             console.log(title);
 
             this.wait(2000, function(){
-                //console.log("here");
-                console.log("200");
+                console.log("here");
                 this.click(logo_selector);
             });
         }
         else {
-            if (i > 50) {
-                console.log("404");
+            if (search_times > 30) {
+                console.log('404');
                 casper.exit();
             }
             else {
+                search_times++;
                 search();
             }
         } 
@@ -63,7 +61,7 @@ casper.then(function(){
         return document.body.innerHTML;
     });
     //console.log(res);
-    //console.log("aaa");
+    console.log("200");
     casper.exit();
 });
 casper.run();

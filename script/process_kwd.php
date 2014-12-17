@@ -45,13 +45,10 @@ function crawler() {
             $obj = $result->fetch_object();
             $result->close();
         }
-        
-        //$sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
-        //$mysqli->query($sql);
 
         if (!$obj || !$obj->id) {
             echo "zz\n";
-            sleep(1);
+            sleep(5);
             continue ;
         }
         else {
@@ -207,7 +204,7 @@ function crawler() {
                 $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
             }
             */
-            $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id;
+            $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id . " AND clicked_times > 0";
             $mysqli->query($sql);
 
             echo $mysqli->error . "\n";
@@ -219,6 +216,6 @@ function crawler() {
 }
 
 function cutback($mysqli, $obj) {
-    $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id; 
+    $sql = "UPDATE keyword SET clicked_times = clicked_times - 1 WHERE id = " . $obj->id . " AND clicked_times > 0"; 
     $mysqli->query($sql); 
 }

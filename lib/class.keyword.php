@@ -43,7 +43,7 @@ class keyword {
             }
         }
         elseif ('tbmobi' == $data['platform']) {
-            $search_url = 'http://s.m.taobao.com/h5?q='.$kwd.'&search-bton=&event_submit_do_new_search_auction=1&_input_charset=utf-8&topSearch=1&atype=b&searchfrom=1&action=home%3Aredirect_app_action&from=1';
+            $search_url = 'http://s.m.taobao.com/h5?q='.$kwd.'&search-bton=&event_submit_do_new_search_auction=1&_input_charset=utf-8&topSearch=1&atype=b&searchfrom=1&action=home%3Aredirect_app_action&from=1&ttid=';
         }
 
         return $search_url;
