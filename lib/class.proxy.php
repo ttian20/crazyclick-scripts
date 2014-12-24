@@ -6,16 +6,20 @@ class proxy {
 
     public function publishProxy($https = false) {
         if ($https) {
-            $url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num=200&country=CN&high=1&https=1&style=2';
             $exchangeName = 'e_proxy_https';
             $queueName = 'q_proxy_https';
             $routerName = 'proxy_https';
+            $max = 2500;
+            $size = 200;
+            $url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&https=1&style=2';
         }
         else {
-            $url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num=180&country=CN&high=1&style=2';
             $exchangeName = 'e_proxy';
             $queueName = 'q_proxy';
             $routerName = 'proxy';
+            $max = 4000;
+            $size = 200;
+            $url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2';
         }
 
         $params = array('host' =>'10.168.45.191',  
@@ -34,38 +38,38 @@ class proxy {
         $queue->setFlags(AMQP_PASSIVE);
         $queue->setName($queueName);
         $messageCount = $queue->declareQueue();
-        if ($messageCount >= 2500) {
+        if ($messageCount >= $max) {
             echo $messageCount . "\n";
-            return ;
+            return true;
         }
+
+        $times = ceil(($max - $messageCount) / $size);
+        //echo $max . "\n";
+        //echo $messageCount . "\n";
+        //echo $times . "\n";
 
         $userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.2; .NET4.0C; .NET4.0E)';
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-        curl_setopt($ch, CURLOPT_USERAGENT, $userAgent); 
-        $info = curl_exec($ch);
-        if(curl_errno($ch))
-        {
-            echo curl_error($ch);
-        }
-        curl_close($ch);
-        $content = trim($info);
-        $arr = explode("\n", $content);
+        for ($i = 0; $i < $times; $i++) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+            curl_setopt($ch, CURLOPT_USERAGENT, $userAgent); 
+            $info = curl_exec($ch);
+            if (curl_errno($ch)) {
+                echo curl_error($ch);
+            }
+            curl_close($ch);
+            $content = trim($info);
+            $arr = explode("\n", $content);
+            if (count($arr) < 10) {
+                echo "no proxy" . " available\n";
+                $conn->disconnect();
+                return false;
+            }
 
-        $params = array('host' =>'10.168.45.191',  
-                        'port' => 5672,  
-                        'login' => 'guest',  
-                        'password' => 'guest',  
-                        'vhost' => '/kwd');  
-
-        $conn = new AMQPConnection($params);  
-        $conn->connect();
-        $channel = new AMQPChannel($conn);
-        $exchange = new AMQPExchange($channel);
-        $exchange->setName($exchangeName);
-        foreach ($arr as $proxy) {
-            $exchange->publish(trim($proxy), $routerName);
+            foreach ($arr as $proxy) {
+                $exchange->publish(trim($proxy), $routerName);
+            }
         }
         $conn->disconnect();
     }
@@ -115,7 +119,6 @@ class proxy {
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
         if ($https) {
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         }
@@ -128,7 +131,36 @@ class proxy {
         }
         else {
             curl_close($ch);
+            if ($https) {
+                $res = $this->_testProxyRedirect($proxy);
+                if ($res) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
             return true;
+        }
+    }
+
+    public function _testProxyRedirect($proxy) {
+        $url = 'http://admin.aymoo.com/admin/test/proxy';
+        $timeout = 5;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        
+        $res = curl_exec($ch);
+        curl_close($ch);
+        if ($proxy == trim($res)) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 

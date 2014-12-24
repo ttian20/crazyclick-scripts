@@ -49,7 +49,7 @@ class crawler {
             unset($tmpdata['price_to']);
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = $this->getTmallPage($url);
+            $page = $this->getTmallPage($url, $this->nid);
             $this->update($tmpdata, $page);
             $minPage = $page;
             $selected = $tmpdata;
@@ -59,7 +59,7 @@ class crawler {
             $tmpdata = $data;
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = $this->getTmallPage($url);
+            $page = $this->getTmallPage($url, $this->nid);
             $this->update($tmpdata, $page);
             if ($minPage == -1 && $page > 0) {
                 $minPage = $page;
@@ -162,9 +162,10 @@ class crawler {
         if (200 == $curl->http_status_code) {
             $body = $curl->response;
             $findme = '"nid":"' . $this->nid . '"';
-            //echo $body . "\n";
+            echo $body . "\n";
             //echo $findme . "\n";
             //var_dump(strpos($body, $findme));
+            //exit;
             //echo "\n";
             if (strpos($body, $findme)) {
                 return $i;
@@ -203,48 +204,20 @@ class crawler {
         }
     }
 
-    public function getTmallPage($url, $i = 1) {
-        echo $url . "\n";
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->getUserAgent()); 
-        curl_setopt($ch, CURLOPT_PROXY, $this->proxy); 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20); 
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 
-        $body = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        print_r($info);
+    public function getTmallPage($url, $nid) {
+        $search_selector = "a[href*='id=".$nid."']";
+        $next_selector = "a.ui-page-s-next";
+        $jsfile = JS_DIR . 'tm.js';
+    
+        $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$this->proxy." --output-encoding=gbk --script-encoding=gbk \"".$url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\"";
+        $output = system($cmd);
 
-        if(curl_errno($ch))
-        {
-            echo curl_error($ch);
-            $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy(true);
-            curl_close($ch);
-            return $this->getTmallPage($url, $i);
-        }
-        curl_close($ch);
-
-        $findme = 'data-id="' . $this->nid . '"';
-        if (strpos($body, $findme)) {
-            return $i;
+        $len = strlen($output);
+        if ($len < 3 && $len > 0) {
+            return $output;
         }
         else {
-            if ($i >= 20) {
-                return -1;
-            }
-            $nextPagePattern = "/<a href=\"(.*?)\" class=\"ui-page-s-next\" atpanel/i";
-            preg_match_all($nextPagePattern, $body, $match);
-            if (!$match[1][0]) {
-                //print_r($match);
-                return -1;
-            }
-            $url = $this->tmallSearchBaseUrl . html_entity_decode($match[1][0]);
-            $i++;
-            echo $i . " not found\n";
-            return $this->getTmallPage($url, $i);
+            return -1;
         }
     }
 
@@ -324,12 +297,24 @@ class crawler {
         if (isset($data['region']) && $data['region']) {
             $upData[$path . '_region'] = $data['region']; 
         }
+        else {
+            $upData[$path . '_region'] = ''; 
+        }
+
         if (isset($data['price_from']) && $data['price_from']) {
             $upData[$path . '_price_from'] = $data['price_from']; 
         }
+        else {
+            $upData[$path . '_price_from'] = 0; 
+        }
+
         if (isset($data['price_to']) && $data['price_to']) {
             $upData[$path . '_price_to'] = $data['price_to']; 
         }
+        else {
+            $upData[$path . '_price_to'] = 0; 
+        }
+
         $upData[$path . '_page'] = $page;
 
         $sqlArr = array();
@@ -342,6 +327,11 @@ class crawler {
         $this->db->query($sql);
         if ($page != -1) {
             $sql = "UPDATE keyword SET is_detected = 1 WHERE id = {$data['id']}";
+            echo $sql . "\n";
+            $this->db->query($sql);
+        }
+        else {
+            $sql = "UPDATE keyword SET detect_times = detect_times + 1 WHERE id = {$data['id']}";
             echo $sql . "\n";
             $this->db->query($sql);
         }
