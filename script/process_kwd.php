@@ -36,16 +36,21 @@ function crawler() {
         $current = time();
 
         $hms = date('H:i:s');
+        /*
         $sql = "SELECT * FROM keyword "
              . "WHERE status = 'active' AND is_detected = 1 AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
              . "AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) ORDER BY last_click_time ASC LIMIT 1";
+        */
+        $sql = "SELECT * FROM keyword "
+             . "WHERE status = 'active' AND is_detected = 1 AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
+             . "AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) AND times > 60 ORDER BY last_click_time ASC LIMIT 1";
         $result = $mysqli->query($sql);
         $data = array();
         if ($result) {
             $obj = $result->fetch_object();
             $result->close();
         }
-
+        
         if (!$obj || !$obj->id) {
             echo "zz\n";
             sleep(5);
@@ -189,6 +194,20 @@ function crawler() {
                 $next_selector = "a.ui-page-s-next";
 
                 $cmd = "/usr/bin/casperjs --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . $sleep_time ;
+            }
+            elseif ('jdpc' == $platform) {
+                $data = array(
+                    'kwd' => urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
+                    'platform' => $platform,
+                );
+
+                $proxy = $proxyObj->getProxy();
+
+                $search_url = $keyword->buildSearchUrl($data);
+                $search_selector = "div.p-name a[href*='" . $nid . "']";
+                $next_selector = "a.next";
+
+                $cmd = "/usr/bin/casperjs " . $jsfile . " --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
             }
         }
     
