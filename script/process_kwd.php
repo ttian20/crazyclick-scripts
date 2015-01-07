@@ -36,14 +36,14 @@ function crawler() {
         $current = time();
 
         $hms = date('H:i:s');
-        /*
         $sql = "SELECT * FROM keyword "
              . "WHERE status = 'active' AND is_detected = 1 AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
              . "AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) ORDER BY last_click_time ASC LIMIT 1";
-        */
+        /*
         $sql = "SELECT * FROM keyword "
              . "WHERE status = 'active' AND is_detected = 1 AND begin_time <= {$today} AND end_time >= {$today} AND click_start <= '{$hms}' AND click_end > '{$hms}' "
              . "AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) AND times > 60 ORDER BY last_click_time ASC LIMIT 1";
+        */
         $result = $mysqli->query($sql);
         $data = array();
         if ($result) {
