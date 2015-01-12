@@ -201,6 +201,8 @@ function crawler() {
                     'platform' => $platform,
                 );
 
+                $ua = 'aa';
+                $keyword = new keyword();
                 $proxy = $proxyObj->getProxy();
 
                 $search_url = $keyword->buildSearchUrl($data);
