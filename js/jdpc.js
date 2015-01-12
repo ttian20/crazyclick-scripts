@@ -12,7 +12,8 @@ var res;
 
 var search_url = casper.cli.get(0);
 var search_selector = casper.cli.get(1);
-var next_selector = casper.cli.get(2)
+var next_selector = casper.cli.get(2);
+var sleep_time = casper.cli.get(3);
 var search_times = 0;
 
 casper.start(search_url);
@@ -66,6 +67,7 @@ casper.then(function(){
         });
     }
     else {
+        console.log('200-405');
         casper.exit();
     }
 });
@@ -73,6 +75,7 @@ casper.then(function(){
 casper.then(function(){
     casper.evaluate(function(){
     });
+    console.log('200');
     casper.exit();
 });
 casper.run();
