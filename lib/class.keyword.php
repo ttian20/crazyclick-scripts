@@ -6,7 +6,7 @@ class keyword {
 
     public function buildSearchUrl($data) {
         $kwd = $data['kwd'];
-        if ('tbpc' == $data['platform']) {
+        if (in_array($data['platform'], array('tbpc', 'tbad'))) {
             $date = $data['date'];
             switch ($data['path']) {
                 case 'taobao':

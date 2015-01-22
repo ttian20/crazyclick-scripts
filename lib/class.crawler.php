@@ -86,7 +86,7 @@ class crawler {
             unset($tmpdata['price_to']);
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getPage($url);
+            $page = (int)$this->getTaobaoPage($url, $this->nid);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -98,7 +98,7 @@ class crawler {
             $tmpdata = $data;
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getPage($url);
+            $page = (int)$this->getTaobaoPage($url, $this->nid);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -117,7 +117,7 @@ class crawler {
             unset($tmpdata['price_from']);
             unset($tmpdata['price_to']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getPage($url);
+            $page = (int)$this->getTaobaoPage($url, $this->nid);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -134,7 +134,7 @@ class crawler {
             //地区和价格同时作搜索条件
             $tmpdata = $data;
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getPage($url);
+            $page = (int)$this->getTaobaoPage($url, $this->nid);
             $this->update($tmpdata, $page);
             if ($minPage == -1 && $page > 0) {
                 $minPage = $page;
@@ -162,7 +162,7 @@ class crawler {
         if (200 == $curl->http_status_code) {
             $body = $curl->response;
             $findme = '"nid":"' . $this->nid . '"';
-            echo $body . "\n";
+            //echo $body . "\n";
             //echo $findme . "\n";
             //var_dump(strpos($body, $findme));
             //exit;
@@ -204,6 +204,23 @@ class crawler {
         }
     }
 
+    public function getTaobaoPage($url, $nid) {
+        $search_selector = "a[href*='id=".$nid."']";
+        $next_selector = 'a[trace="srp_bottom_pagedown"]';
+        $jsfile = JS_DIR . 'tb.js';
+    
+        $cmd = "/usr/bin/casperjs " . $jsfile . " --proxy=".$this->proxy." --output-encoding=gbk --script-encoding=gbk \"".$url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\"";
+        $output = system($cmd);
+
+        $len = strlen($output);
+        if ($len < 3 && $len > 0) {
+            return $output;
+        }
+        else {
+            return -1;
+        }
+    }
+
     public function getTmallPage($url, $nid) {
         $search_selector = "a[href*='id=".$nid."']";
         $next_selector = "a.ui-page-s-next";
@@ -233,9 +250,10 @@ class crawler {
             'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)',
             'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; 360SE)',
         );
-        $count = count($data);
-        $rand = rand(0, $count - 1);
-        return $data[$rand]; 
+        //$count = count($data);
+        //$rand = rand(0, $count - 1);
+        //return $data[$rand]; 
+        return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0';
     }
 
     public function update($data, $page) {

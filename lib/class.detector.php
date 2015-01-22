@@ -77,15 +77,15 @@ class detector {
     }
 
     public function getTaobaoPrice($kwd) {
-        //$proxyObj = new proxy();
-        //$proxy = $proxyObj->getProxy();
+        $proxyObj = new proxy();
+        $proxy = $proxyObj->getProxy();
         $url = 'http://item.taobao.com/item.htm?id=' . $kwd->nid;
         $user_agent = $this->getUserAgent();
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
         curl_close($ch);
@@ -100,19 +100,22 @@ class detector {
         $pattern = '/var b="(.*?)",/';
         preg_match_all($pattern, $content, $matches);
         $detail_url = $matches[1][0];
+        //echo $detail_url . "\n";
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $detail_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_REFERER, $url);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
         curl_close($ch);
         $content = trim($info);
+        //echo $content . "\n";
         $pattern = '/price:"([.0-9]+?)",/';
         preg_match_all($pattern, $content, $matches);
+        //print_r($matches);
         if ($matches) {
             foreach ($matches[1] as $p) {
                 if (bccomp($p, $start_price) == -1) {
@@ -155,9 +158,10 @@ class detector {
             'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)',
             'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; 360SE)',
         );
-        $count = count($data);
-        $rand = rand(0, $count - 1);
-        return $data[$rand]; 
+        //$count = count($data);
+        //$rand = rand(0, $count - 1);
+        //return $data[$rand]; 
+        return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0';
     }
 
     public function getProvinces() {
