@@ -52,6 +52,10 @@ class keyword {
         return $search_url;
     }
 
+    public function buildItemUrl($data) {
+        return 'http://item.jd.com/' . $data['nid'] . '.html';
+    }
+
     public function getUserAgent() {
         $data = array(
             'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
