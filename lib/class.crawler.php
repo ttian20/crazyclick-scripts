@@ -80,13 +80,10 @@ class crawler {
             $proxyObj = new proxy();
             $this->proxy = $proxyObj->getProxy();
 
-            //无附加搜索条件
+            //地区和价格同时作搜索条件
             $tmpdata = $data;
-            unset($tmpdata['price_from']);
-            unset($tmpdata['price_to']);
-            unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getTaobaoPage($url, $this->nid);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -94,11 +91,31 @@ class crawler {
             $selected = $tmpdata;
             sleep(1);
 
+            //无附加搜索条件
+            $tmpdata = $data;
+            unset($tmpdata['price_from']);
+            unset($tmpdata['price_to']);
+            unset($tmpdata['region']);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            $page = (int)$this->getPage($url);
+            $this->update($tmpdata, $page);
+            if ($minPage == -1 && $page > 0) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            if ($page > 0 && $page < $minPage) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            sleep(1);
+            //print_r($tmpdata);
+            //echo $page."\n";
+
             //单纯价格作搜索条件
             $tmpdata = $data;
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getTaobaoPage($url, $this->nid);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -117,7 +134,7 @@ class crawler {
             unset($tmpdata['price_from']);
             unset($tmpdata['price_to']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getTaobaoPage($url, $this->nid);
+            $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
             //print_r($tmpdata);
             //echo $page."\n";
@@ -129,27 +146,9 @@ class crawler {
                 $minPage = $page;
                 $selected = $tmpdata;
             }
-            sleep(1);
-
-            //地区和价格同时作搜索条件
-            $tmpdata = $data;
-            $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getTaobaoPage($url, $this->nid);
-            $this->update($tmpdata, $page);
-            if ($minPage == -1 && $page > 0) {
-                $minPage = $page;
-                $selected = $tmpdata;
-            }
-            if ($page > 0 && $page < $minPage) {
-                $minPage = $page;
-                $selected = $tmpdata;
-            }
-            //print_r($tmpdata);
-            //echo $page."\n";
 
             //specify the search condition
             $this->specify($selected, $minPage);
-            sleep(1);
         }
     }
 
@@ -171,27 +170,38 @@ class crawler {
                 return $i;
             }
             else {
-                if ($i >= 20) {
+                if ($i >= 10) {
                     return -1;
                 }
-                //sleep();
-                //$begin = microtime(true);
-                $nextPagePattern = "/<\/a><a href=\"\/(.*?)\"  class=\"page-next\" trace='srp_select_pagedown'>/i";
-                #$nextPagePattern = "/<a href=\"\/([_-=\.\?%&a-z0-9]+?)\"  class=\"page-next\" trace='srp_select_pagedown'>/i";
-                preg_match_all($nextPagePattern, $body, $match);
-                //$end = microtime(true);
-                //echo "cost time: " . ($end - $begin);  
-                //echo "\n";
-                //echo strpos($body, 'page-next');
-                //echo $body;
+
+                $baseUrlPattern = "/\"pager\":\"(.*?)\"/";
+                preg_match_all($baseUrlPattern, $body, $match);
+                print_r($match);
                 if (!$match[1][0]) {
                     //print_r($match);
                     //echo $body . "\n";
                     return -1;
                 }
-                $url = $this->taobaoSearchBaseUrl . $match[1][0];
-                $sleepSecond = rand(2, 4);
-                sleep($sleepSecond);
+                $baseUrl = $match[1][0];
+                $pagePattern = "/\"pageSize\":(\d+),\"totalPage\":(\d+),\"currentPage\":(\d+),\"totalCount\":(\d+)/";
+                preg_match_all($pagePattern, $body, $pageMatch);
+                if (!$pageMatch[1][0]) {
+                    return -1;
+                }
+                $pageSize = $pageMatch[1][0];
+                $totalPage = $pageMatch[2][0];
+                $currentPage = $pageMatch[3][0];
+                if ($totalPage > $currentPage) {
+                    $pageNum = $currentPage * $pageSize;
+                    $url = substr($baseUrl, 0, strrpos($baseUrl, '=')) . '=' . $pageNum;
+                    $url = stripslashes($url);
+                    echo $url . "\n";
+                }
+                else {
+                    return -1;
+                }
+
+                sleep(2);
                 $i++;
                 echo $i . " not found\n";
                 return $this->getPage($url, $i);

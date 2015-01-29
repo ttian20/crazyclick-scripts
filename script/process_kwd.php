@@ -65,25 +65,6 @@ function crawler() {
                 continue;
             }
 
-            /*
-            $mysqli->autocommit(0);
-            $sql = "SELECT * FROM keyword WHERE id = {$obj->id} AND clicked_times < times AND ((last_click_time + click_interval) < {$current}) FOR UPDATE";
-            $result = $mysqli->query($sql);
-            $obj = $result->fetch_object();
-            if ($obj) {
-                $sql = "UPDATE keyword SET last_click_time = {$current} WHERE id = {$obj->id}";
-                $mysqli->query($sql);
-                $mysqli->commit();
-                $mysqli->autocommit(1);
-            }
-            else {
-                $mysqli->rollback();
-                $mysqli->autocommit(1);
-                sleep(1);
-                continue;
-            }
-            */
-
             $platform = $obj->platform;
             $table = 'keyword_' . $platform;
             $sql = "SELECT * FROM {$table} WHERE kid = {$obj->id} LIMIT 1";
@@ -92,6 +73,7 @@ function crawler() {
 
             $kwd = urlencode($obj->kwd);
             $nid = $obj->nid;
+            $shop_type = $obj->shop_type;
             $date = date('Ymd');
             $sleep_time = $obj->sleep_time;
 
@@ -210,6 +192,87 @@ function crawler() {
                 $next_selector = "a.next";
 
                 $cmd = "/usr/bin/casperjs " . $jsfile . " --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+            }
+            elseif ('tbad' == $platform) {
+                $path1 = (int)$row->path1;
+                $path2 = $path1 + (int)$row->path2;
+                $path3 = $path2 + (int)$row->path3;
+                $title = trim($row->title);
+    
+                $ua = 'aa';
+                $keyword = new keyword();
+    
+                $rand = rand(1, 100);
+                if ($rand <= $path1) {
+                    //taobao search
+                    $path = 'taobao';
+                    $data = array(
+                        'path' => 'taobao',
+                        'kwd' => $kwd,
+                        'platform' => $platform,
+                        'date' => $date,
+                        'region' => $row->path1_region,
+                        'price_from' => $row->path1_price_from,
+                        'price_to' => $row->path1_price_to,
+                    );
+                    if ($row->path1_page >= 11 || $row->path1_page == -1) {
+                        cutback($mysqli, $obj);
+                        continue;
+                    }
+                    $proxy = $proxyObj->getProxy();
+                    $search_url = $keyword->buildSearchUrl($data);
+                    $search_selector = ".m-p4p a[title='{$title}']";
+                    $next_selector = 'a[trace="srp_bottom_pagedown"]';
+                
+                    $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $shop_type . "\"";
+                }
+                elseif ($rand <= $path2) {
+                    //taobao search tmall tab
+                    $path = 'taobao2tmall';
+                    $data = array(
+                        'path' => 'taobao2tmall',
+                        'kwd' => $kwd,
+                        'platform' => $platform,
+                        'date' => $date,
+                        'region' => $row->path2_region,
+                        'price_from' => $row->path2_price_from,
+                        'price_to' => $row->path2_price_to,
+                    );
+                    if ($row->path2_page >= 11 || $row->path2_page == -1) {
+                        cutback($mysqli, $obj);
+                        continue;
+                    }
+                    $proxy = $proxyObj->getProxy();
+                    $search_url = $keyword->buildSearchUrl($data);
+                    $search_selector = ".m-p4p a[title='{$title}']";
+                    $next_selector = 'a[trace="srp_bottom_pagedown"]';
+                
+                    $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $shop_type . "\"";
+                }
+                else {
+                    //tmall search
+                    $path = 'tmall';
+                    $data = array(
+                        'path' => 'tmall',
+                        'kwd' => $kwd,
+                        'platform' => $platform,
+                        'date' => $date,
+                        'region' => $row->path3_region,
+                        'price_from' => $row->path3_price_from,
+                        'price_to' => $row->path3_price_to,
+                    );
+                    if ($row->path3_page >= 11 || $row->path3_page == -1) {
+                        cutback($mysqli, $obj);
+                        continue;
+                    }
+                    $proxy = $proxyObj->getProxy(true);
+    
+                    $search_url = $keyword->buildSearchUrl($data);
+                    $search_selector = ".m-p4p a[title='{$title}']";
+                    $next_selector = "a.ui-page-s-next";
+    
+                    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $shop_type . "\"";
+                }
             }
         }
     

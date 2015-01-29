@@ -18,6 +18,16 @@ class crawler_tbad {
     }
 
     public function run($data) {
+        //处理price范围
+        $priceStr = explode(".", $data['price']);
+        if ($priceStr[1] = '00') {
+            $data['price_from'] = $priceStr[0] - 1;
+            $data['price_to'] = $priceStr[0] + 1;
+        }
+        else {
+            $data['price_from'] = floor($priceStr[0]) - 1;
+            $data['price_to'] = floor($priceStr[0]) + 1;
+        }
         $data['date'] = date('Ymd');
         $data['kwd'] = urlencode($data['kwd']);
 
@@ -49,14 +59,14 @@ class crawler_tbad {
             $proxyObj = new proxy();
             $this->proxy = $proxyObj->getProxy();
 
+            //地区和价格同时作搜索条件
             $tmpdata = $data;
-            unset($tmpdata['price_from']);
-            unset($tmpdata['price_to']);
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = (int)$this->getTaobaoPage($url, $data['title']);
             $this->update($tmpdata, $page);
-
+            $minPage = $page;
+            $selected = $tmpdata;
 
 /*
             //地区和价格同时作搜索条件
@@ -187,7 +197,7 @@ class crawler_tbad {
     public function getTaobaoPage($url, $title) {
         $search_selector = ".m-p4p a[title='{$title}']";
         $next_selector = "a[trace='srp_bottom_pagedown']";
-        $jsfile = JS_DIR . 'tbad.js';
+        $jsfile = JS_DIR . 'ad.js';
     
         $cmd = "/usr/bin/casperjs " . $jsfile . " --proxy=".$this->proxy." --output-encoding=gbk --script-encoding=gbk \"".$url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\"";
         echo $cmd . "\n";;
