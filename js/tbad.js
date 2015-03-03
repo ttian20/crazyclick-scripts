@@ -61,7 +61,6 @@ function search(flag) {
             }, search_selector);
             console.log(++search_times);
             this.click(search_selector);
-            casper.exit();
         }
         else {
             if (search_times >= 10) {
@@ -75,7 +74,12 @@ function search(flag) {
         }
     });
 }
-
+casper.then(function(){
+    title = casper.evaluate(function(){
+        return document.title;
+    }); 
+    console.log(title);
+});
 
 casper.then(function(){
     left(shop_type);
