@@ -11,7 +11,10 @@ class proxy {
             $routerName = 'proxy_https';
             $max = 2500;
             $size = 200;
-            $url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&https=1&style=2';
+            //$url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&https=1&style=2';
+            //$url = 'http://www.httpsdaili.com/api.asp?key=hvdhbn68456&getnum='.$size.'&anonymoustype=3&filter=1&area=1&proxytype=1';
+            $url = 'http://www.kuaidaili.com/api/getproxy/?orderid=902587087393360&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp2=1&sort=0&format=text&sep=2';
+            echo $url . "\n";
         }
         else {
             $exchangeName = 'e_proxy';
@@ -70,6 +73,7 @@ class proxy {
             foreach ($arr as $proxy) {
                 $exchange->publish(trim($proxy), $routerName);
             }
+            sleep(6);
         }
         $conn->disconnect();
     }
@@ -153,10 +157,41 @@ class proxy {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
-        
         $res = curl_exec($ch);
+
+        $proxyArr = explode(':', $proxy);
+        $resArr = explode(':', trim($res));
+        echo "proxy is ";
+        var_dump($proxyArr[0]);
+        echo "\n";
+        echo "return is ";
+        var_dump($resArr[0]);
+        echo "\n";
         curl_close($ch);
-        if ($proxy == trim($res)) {
+
+        $params = array('host' =>'10.168.45.191',  
+                        'port' => 5672,  
+                        'login' => 'guest',  
+                        'password' => 'guest',  
+                        'vhost' => '/kwd');  
+
+        $exchangeName = 'e_proxy';
+        $queueName = 'q_proxy';
+        $routerName = 'proxy';
+
+        $conn = new AMQPConnection($params);  
+        $conn->connect();
+        $channel = new AMQPChannel($conn);
+        $exchange = new AMQPExchange($channel);
+        $exchange->setName($exchangeName);
+        $rs = $exchange->publish(trim($proxy), $routerName);
+        $res = $rs ? '1' : '0'; 
+//        error_log($rs . "\n", 3, '/var/html/production/logs/proxy.log');
+//        error_log($proxy . "\n", 3, '/var/html/production/logs/proxy.log');
+
+        $conn->disconnect();
+
+        if ($proxyArr[0] == $resArr[0]) {
             return true;
         }
         else {
