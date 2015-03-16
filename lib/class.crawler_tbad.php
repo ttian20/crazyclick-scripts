@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__FILE__) . '/class.curl.php';
 require_once dirname(__FILE__) . '/class.keyword.php';
+require_once dirname(__FILE__) . '/class.proxy_redis.php';
 
 class crawler_tbad {
     public $proxy = null;
@@ -37,7 +38,7 @@ class crawler_tbad {
         if ($data['path'] == 'tmall') {
             // 仅关键词为搜索条件
             $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy(true);
+            $this->proxy = $proxyObj->getProxy($data['sid'], true);
 
             //无附加搜索条件
             $tmpdata = $data;
@@ -57,9 +58,24 @@ class crawler_tbad {
             //3. 单纯地区作搜索条件
             //4  地区和价格同时作搜索条件
             $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy();
+            $this->proxy = $proxyObj->getProxy($data['sid']);
+
+            //无附加搜索条件
+            $tmpdata = $data;
+            unset($tmpdata['price_from']);
+            unset($tmpdata['price_to']);
+            unset($tmpdata['region']);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            $page = (int)$this->getTaobaoPage($url, $data['title']);
+            $this->update($tmpdata, $page);
+            $minPage = $page;
+            $selected = $tmpdata;
+
+            //print_r($tmpdata);
+            //echo $page."\n";
 
             //地区和价格同时作搜索条件
+/*
             $tmpdata = $data;
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
@@ -68,7 +84,6 @@ class crawler_tbad {
             $minPage = $page;
             $selected = $tmpdata;
 
-/*
             //地区和价格同时作搜索条件
             $tmpdata = $data;
             $url = $this->kwdObj->buildSearchUrl($tmpdata);

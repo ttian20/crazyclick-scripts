@@ -15,7 +15,7 @@ $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
 $mysqli->query('SET NAMES gbk');
 $sql = "SELECT k.*, tb.page FROM keyword k "
      . "INNER JOIN keyword_jdpc tb ON tb.kid = k.id "
-     . "WHERE k.status = 'active' AND k.platform = 'jdpc' AND k.is_detected = 0 AND k.detect_times < 5";
+     . "WHERE k.status = 'active' AND k.platform = 'jdpc' AND k.is_detected = 0 AND k.detect_times < 10";
 if ($kid) {
     $sql .= " AND k.id = {$kid}";
 }
@@ -48,6 +48,7 @@ while ($obj = $result->fetch_object()) {
         'id' => $obj->id,
         'kwd' => $obj->kwd,
         'nid' => $obj->nid,
+        'sid' => $obj->sid,
         'platform' => $obj->platform,
         'path' => 'jd',
     );

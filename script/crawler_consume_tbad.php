@@ -2,8 +2,6 @@
 set_time_limit(0);
 date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
-require_once LIB_DIR . 'class.proxy.php';
-require_once LIB_DIR . 'class.detector.php';
 require_once LIB_DIR . 'class.crawler_tbad.php';
 
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);

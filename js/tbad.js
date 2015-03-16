@@ -15,7 +15,7 @@ var search_url = casper.cli.get(0);
 var search_selector = casper.cli.get(1);
 var next_selector = casper.cli.get(2)
 var sleep_time = parseInt(casper.cli.get(3)) * 1000;
-var shop_type = casper.cli.get(3);
+var shop_type = casper.cli.get(4);
 var search_times = 0;
 var scroll_wait = 4000;
 
@@ -76,7 +76,7 @@ function search(flag) {
 }
 casper.then(function(){
     title = casper.evaluate(function(){
-        return document.title;
+        return document.body.innerHTML;
     }); 
     console.log(title);
 });

@@ -1,5 +1,5 @@
 <?php
-require_once dirname(__FILE__) . '/class.proxy.php';
+require_once dirname(__FILE__) . '/class.proxy_redis.php';
 class detector {
     public function __construct() {
 
@@ -16,8 +16,9 @@ class detector {
     }
 
     public function getTmallPrice($kwd) {
-        //$proxyObj = new proxy();
-        //$proxy = $proxyObj->getProxy(true);
+        $proxyObj = new proxy();
+        $shopId = '111111';
+        $proxy = $proxyObj->getProxy($shopId);
 
         $url = 'http://detail.tmall.com/item.htm?id=' . $kwd->nid;
         $ch = curl_init();
@@ -25,11 +26,15 @@ class detector {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
-        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
         curl_close($ch);
         $content = trim($info);
+
+        $shop_id_pattern = '/<meta name="microscope-data" content="pageId=\d+;prototypeId=\d+;siteId=\d+; shopId=(\d+); userid=\d+;">/';
+        preg_match_all($shop_id_pattern, $content, $matches);
+        $shop_id = $matches[1][0];
         
         $pattern = "/var l,url='(.*?)';/";
         preg_match_all($pattern, $content, $matches);
@@ -39,7 +44,7 @@ class detector {
         curl_setopt($ch, CURLOPT_URL, $detail_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
-        //curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_REFERER, $url);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
@@ -73,12 +78,13 @@ class detector {
             $region = str_replace($provinces, '', $region);
         }
         
-        return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region);
+        return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region, 'shop_id' => $shop_id);
     }
 
     public function getTaobaoPrice($kwd) {
         $proxyObj = new proxy();
-        $proxy = $proxyObj->getProxy();
+        $shopId = '111111';
+        $proxy = $proxyObj->getProxy($shopId);
         $url = 'http://item.taobao.com/item.htm?id=' . $kwd->nid;
         $user_agent = $this->getUserAgent();
         $ch = curl_init();
@@ -91,6 +97,9 @@ class detector {
         curl_close($ch);
         $content = trim($info);
         //echo $content . "\n";
+        $shop_id_pattern = '/<meta name="microscope-data" content="pageId=\d+;prototypeId=\d+;siteId=\d+; shopId=(\d+); userid=\d+;">/';
+        preg_match_all($shop_id_pattern, $content, $matches);
+        $shop_id = $matches[1][0];
         
         $end_price_pattern = '/price:([.0-9]+?),/';
         preg_match_all($end_price_pattern, $content, $matches);
@@ -143,7 +152,7 @@ class detector {
                 $region = str_replace($provinces, '', $region);
             }
         }
-        return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region);
+        return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region, 'shop_id' => $shop_id);
     }
 
     public function getUserAgent() {

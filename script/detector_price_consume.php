@@ -2,7 +2,6 @@
 set_time_limit(0);
 date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
-require_once LIB_DIR . 'class.proxy.php';
 require_once LIB_DIR . 'class.detector.php';
 
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
@@ -38,8 +37,12 @@ while ($message = $queue->get(AMQP_AUTOACK)) {
         echo $sql . "\n";
         $mysqli->query($sql);
     }
+
+    if ($price['shop_id']) {
+        $sql = "UPDATE keyword SET sid = '{$price['shop_id']}' WHERE id = " . $kwdObj->id;
+        $mysqli->query($sql);
+    }
     sleep(2);
 }
 $conn->disconnect();
 exit;
-

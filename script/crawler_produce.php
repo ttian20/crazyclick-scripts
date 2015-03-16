@@ -2,9 +2,6 @@
 set_time_limit(0);
 date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
-require_once LIB_DIR . 'class.proxy.php';
-require_once LIB_DIR . 'class.detector.php';
-require_once LIB_DIR . 'class.crawler.php';
 
 $kid = 0;
 if (isset($argv[1])) {
@@ -16,7 +13,7 @@ $mysqli->query('SET NAMES gbk');
 $sql = "SELECT k.*, tb.path1, tb.path2, tb.path3, p.min_price, p.region FROM keyword k "
      . "INNER JOIN keyword_tbpc tb ON tb.kid = k.id "
      . "INNER JOIN price p ON p.kid = k.id "
-     . "WHERE k.status = 'active' AND k.is_detected = 0";
+     . "WHERE k.status = 'active' AND k.is_detected = 0 AND k.detect_times < 10";
 if ($kid) {
     $sql .= " AND k.id = {$kid}";
 }
@@ -38,6 +35,7 @@ $conn->connect();
 $channel = new AMQPChannel($conn);
 $exchange = new AMQPExchange($channel);
 $exchange->setName('e_crawler');
+
 while ($obj = $result->fetch_object()) {
     //非tbpc，不处理
     if ('tbpc' != $obj->platform) {
@@ -50,6 +48,7 @@ while ($obj = $result->fetch_object()) {
             'id' => $obj->id,
             'kwd' => $obj->kwd,
             'nid' => $obj->nid,
+            'sid' => $obj->sid,
             'platform' => $obj->platform,
             'path' => 'taobao',
             'price' => $obj->min_price,
@@ -64,6 +63,7 @@ while ($obj = $result->fetch_object()) {
             'id' => $obj->id,
             'kwd' => $obj->kwd,
             'nid' => $obj->nid,
+            'sid' => $obj->sid,
             'platform' => $obj->platform,
             'path' => 'taobao2tmall',
             'price' => $obj->min_price,
@@ -78,12 +78,15 @@ while ($obj = $result->fetch_object()) {
             'id' => $obj->id,
             'kwd' => $obj->kwd,
             'nid' => $obj->nid,
+            'sid' => $obj->sid,
             'platform' => $obj->platform,
             'path' => 'tmall',
             'price' => $obj->min_price,
             'region' => $obj->region,
         );
+        print_r($data);
         $exchange->publish(serialize($data), 'r_crawler');
     }
 }
 $conn->disconnect();
+exit();

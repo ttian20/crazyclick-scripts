@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__FILE__) . '/class.curl.php';
 require_once dirname(__FILE__) . '/class.keyword.php';
+require_once dirname(__FILE__) . '/class.proxy_redis.php';
 
 class crawler {
     public $proxy = null;
@@ -41,7 +42,7 @@ class crawler {
             //1. 无附加搜索条件
             //2. 单纯价格作搜索条件
             $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy(true);
+            $this->proxy = $proxyObj->getProxy($data['sid'], true);
 
             //无附加搜索条件
             $tmpdata = $data;
@@ -78,7 +79,7 @@ class crawler {
             //3. 单纯地区作搜索条件
             //4  地区和价格同时作搜索条件
             $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy();
+            $this->proxy = $proxyObj->getProxy($data['sid']);
 
             //地区和价格同时作搜索条件
             $tmpdata = $data;

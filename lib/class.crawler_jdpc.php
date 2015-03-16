@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__FILE__) . '/class.curl.php';
 require_once dirname(__FILE__) . '/class.keyword.php';
+require_once dirname(__FILE__) . '/class.proxy_redis.php';
 
 class crawler_jdpc {
     public $proxy = null;

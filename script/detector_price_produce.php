@@ -2,7 +2,6 @@
 set_time_limit(0);
 date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
-require_once LIB_DIR . 'class.proxy.php';
 require_once LIB_DIR . 'class.detector.php';
 $kid = 0;
 if (isset($argv[1])) {
@@ -16,7 +15,7 @@ if ($kid) {
     $sql .= " AND id = {$kid}";
 }
 else {
-    $sql .= " AND id NOT IN (SELECT kid FROM price)";
+    $sql .= " AND platform IN ('tbpc', 'tbmobi', 'tbad') AND id NOT IN (SELECT kid FROM price)";
 }
 //$sql .= " LIMIT 10";
 echo $sql . "\n";
@@ -36,7 +35,8 @@ $conn->connect();
 $channel = new AMQPChannel($conn);
 $exchange = new AMQPExchange($channel);
 $exchange->setName('e_price');
-while($obj = $result->fetch_object()) {
+
+while ($obj = $result->fetch_object()) {
     $exchange->publish(serialize($obj), 'r_price');
 }
 $conn->disconnect();
