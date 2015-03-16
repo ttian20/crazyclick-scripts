@@ -10,3 +10,6 @@ define('MQ_PORT', 5672);
 define('MQ_LOGIN', 'guest');
 define('MQ_PASSWD', 'guest');
 define('MQ_VHOST', '/kwd');
+
+define('REDIS_HOST', '10.168.45.191');
+define('REDIS_PORT', 6379);
