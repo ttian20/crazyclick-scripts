@@ -15,7 +15,7 @@ if ($kid) {
     $sql .= " AND id = {$kid}";
 }
 else {
-    $sql .= " AND platform IN ('tbpc', 'tbmobi', 'tbad') AND id NOT IN (SELECT kid FROM price)";
+    $sql .= " AND platform IN ('tbpc', 'tbmobi', 'tbad', 'jdpc') AND id NOT IN (SELECT kid FROM price)";
 }
 //$sql .= " LIMIT 10";
 echo $sql . "\n";

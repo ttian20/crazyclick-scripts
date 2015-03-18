@@ -2,9 +2,6 @@
 set_time_limit(0);
 date_default_timezone_set('Asia/Shanghai');
 require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
-require_once LIB_DIR . 'class.proxy.php';
-require_once LIB_DIR . 'class.detector.php';
-require_once LIB_DIR . 'class.crawler.php';
 
 $kid = 0;
 if (isset($argv[1])) {
@@ -13,9 +10,10 @@ if (isset($argv[1])) {
 
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
 $mysqli->query('SET NAMES gbk');
-$sql = "SELECT k.*, tb.page FROM keyword k "
+$sql = "SELECT k.*, tb.page, p.min_price FROM keyword k "
      . "INNER JOIN keyword_jdpc tb ON tb.kid = k.id "
-     . "WHERE k.status = 'active' AND k.platform = 'jdpc' AND k.is_detected = 0 AND k.detect_times < 10";
+     . "INNER JOIN price p ON p.kid = k.id "
+     . "WHERE k.status = 'active' AND k.platform = 'jdpc' AND k.sid != '' AND k.is_detected = 0 AND k.detect_times < 10";
 if ($kid) {
     $sql .= " AND k.id = {$kid}";
 }
@@ -51,6 +49,7 @@ while ($obj = $result->fetch_object()) {
         'sid' => $obj->sid,
         'platform' => $obj->platform,
         'path' => 'jd',
+        'price' => $obj->min_price,
     );
     $exchange->publish(serialize($data), 'r_crawler_jdpc');
 }

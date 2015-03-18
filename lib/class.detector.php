@@ -6,18 +6,25 @@ class detector {
     }
 
     public function run($obj) {
-        if ('b' == $obj->shop_type) {
-            $prices = $this->getTmallPrice($obj); 
+        if (in_array($obj->platform, array('tbpc', 'tbad', 'tbmobi'))) {
+            if ('b' == $obj->shop_type) {
+                $prices = $this->getTmallPrice($obj); 
+            }
+            else {
+                $prices = $this->getTaobaoPrice($obj); 
+            }
         }
-        else {
-            $prices = $this->getTaobaoPrice($obj); 
+        elseif ($obj->platform == 'jdpc') {
+            $prices = $this->getJdPrice($obj);
         }
         return $prices;
     }
 
     public function getTmallPrice($kwd) {
         $proxyObj = new proxy();
-        $shopId = '111111';
+        $shopIdArr = array('111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999');
+        $rand = rand(0, 8);
+        $shopId = $shopIdArr[$rand];
         $proxy = $proxyObj->getProxy($shopId);
 
         $url = 'http://detail.tmall.com/item.htm?id=' . $kwd->nid;
@@ -83,7 +90,9 @@ class detector {
 
     public function getTaobaoPrice($kwd) {
         $proxyObj = new proxy();
-        $shopId = '111111';
+        $shopIdArr = array('111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999');
+        $rand = rand(0, 8);
+        $shopId = $shopIdArr[$rand];
         $proxy = $proxyObj->getProxy($shopId);
         $url = 'http://item.taobao.com/item.htm?id=' . $kwd->nid;
         $user_agent = $this->getUserAgent();
@@ -152,6 +161,53 @@ class detector {
                 $region = str_replace($provinces, '', $region);
             }
         }
+        return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region, 'shop_id' => $shop_id);
+    }
+
+    public function getJdPrice($kwd) {
+        $proxyObj = new proxy();
+        $shopIdArr = array('111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999');
+        $rand = rand(0, 8);
+        $shopId = $shopIdArr[$rand];
+        $proxy = $proxyObj->getProxy($shopId);
+        $url = 'http://item.jd.com/' . $kwd->nid . '.html';
+        $user_agent = $this->getUserAgent();
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+        $info = curl_exec($ch);
+        curl_close($ch);
+        $content = trim($info);
+        //echo $content . "\n";
+        $shop_id_pattern = "/shopId:'(\d+)',/";
+        preg_match_all($shop_id_pattern, $content, $matches);
+        $shop_id = $matches[1][0];
+
+        $sku_id_pattern = "/skuid: (\d+),/";
+        preg_match_all($sku_id_pattern, $content, $matches);
+        $sku_id = $matches[1][0];
+
+        $price_url = 'http://p.3.cn/prices/get?skuid=J_' . $kwd->nid . '&type=1&area=1_72_2799&callback=cnp';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $price_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_REFERER, $url);
+        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+        $info = curl_exec($ch);
+        curl_close($ch);
+        $content = trim($info);
+        
+        $price_pattern = '/"p":"([.0-9]+?)"/';
+        preg_match_all($price_pattern, $content, $matches);
+        $price = (string)$matches[1][0];
+        $start_price = $end_price = $price;
+        $region = '';
+
         return array('start_price' => $start_price, 'end_price' => $end_price, 'region' => $region, 'shop_id' => $shop_id);
     }
 

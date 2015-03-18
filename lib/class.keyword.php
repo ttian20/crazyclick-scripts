@@ -47,6 +47,9 @@ class keyword {
         }
         elseif ('jdpc' == $data['platform']) {
             $search_url = 'http://search.jd.com/Search?keyword='.$kwd.'&enc=utf-8';
+            if ($data['price_from'] && $data['price_to']) {
+                $search_url .= '&qrst=1&rt=1&stop=1&sttr=1&ev=exprice_' . intval($data['price_from']) . '-' . intval($data['price_to']). '%40&uc=0#select';
+            }
         }
 
         return $search_url;

@@ -11,18 +11,20 @@ class proxy {
             $keyMax = 'max_index_https';
             $buffer = 700;
             $size = 200;
-            $sleep = 5;
-            $url = 'http://www.kuaidaili.com/api/getproxy/?orderid=902587087393360&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp2=1&sort=0&format=text&sep=2';
+            $sleep = 2;
+            //$url = 'http://www.kuaidaili.com/api/getproxy/?orderid=902587087393360&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp2=1&sort=0&format=text&sep=2';
+            $url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
             echo $url . "\n";
         }
         else {
             $keyList = 'proxy_list';
             $keySet = 'proxy_set';
             $keyMax = 'max_index';
-            $buffer = 700;
+            $buffer = 1100;
             $size = 200;
             $sleep = 2;
-            $url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2';
+            $url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=1&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
+            //$url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2';
         }
 
         $redis = new Redis();
@@ -96,6 +98,9 @@ class proxy {
 
         $maxIndex = $redis->get($keyMax);
         if ($index > $maxIndex) {
+            #error_log("shop id is " . $shopId . "\n", 3, "/tmp/proxy.log");
+            #error_log("index is " . $index . "\n", 3, "/tmp/proxy.log");
+            #error_log("max index is " . $maxIndex . "\n", 3, "/tmp/proxy.log");
             $redis->set($keyMax, $index);
         }
       
@@ -107,11 +112,11 @@ class proxy {
         echo "test " . $proxy . "\n";
         if ($https) {
             $url = 'https://login.taobao.com/member/login.jhtml';
-            $timeout = 5;
+            $timeout = 6;
         }
         else {
             $url = 'http://www.taobao.com?spm=1.7274553.1997517345.1.7V4oN5';
-            $timeout = 3;
+            $timeout = 6;
         }
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -164,28 +169,6 @@ class proxy {
         var_dump($resArr[0]);
         echo "\n";
         curl_close($ch);
-
-        $params = array('host' =>'10.168.45.191',  
-                        'port' => 5672,  
-                        'login' => 'guest',  
-                        'password' => 'guest',  
-                        'vhost' => '/kwd');  
-
-        $exchangeName = 'e_proxy';
-        $queueName = 'q_proxy';
-        $routerName = 'proxy';
-
-        $conn = new AMQPConnection($params);  
-        $conn->connect();
-        $channel = new AMQPChannel($conn);
-        $exchange = new AMQPExchange($channel);
-        $exchange->setName($exchangeName);
-        $rs = $exchange->publish(trim($proxy), $routerName);
-        $res = $rs ? '1' : '0'; 
-//        error_log($rs . "\n", 3, '/var/html/production/logs/proxy.log');
-//        error_log($proxy . "\n", 3, '/var/html/production/logs/proxy.log');
-
-        $conn->disconnect();
 
         if ($proxyArr[0] == $resArr[0]) {
             return true;
