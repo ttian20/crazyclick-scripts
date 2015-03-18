@@ -17,6 +17,16 @@ class crawler_jdpc {
     }
 
     public function run($data) {
+        //处理price范围
+        $priceStr = explode(".", $data['price']);
+        if ($priceStr[1] = '00') {
+            $data['price_from'] = $priceStr[0];
+            $data['price_to'] = $priceStr[0] + 10;
+        }
+        else {
+            $data['price_from'] = floor($priceStr[0]);
+            $data['price_to'] = floor($priceStr[0]) + 10;
+        }
         $data['date'] = date('Ymd');
         $data['kwd'] = urlencode(mb_convert_encoding($data['kwd'], 'UTF-8', 'GBK'));
 
@@ -25,15 +35,34 @@ class crawler_jdpc {
 //        $proxyObj = new proxy();
 //        $this->proxy = $proxyObj->getProxy();
 
-        //无附加搜索条件
         $tmpdata = $data;
+        unset($tmpdata['price_from']);
+        unset($tmpdata['price_to']);
+        unset($tmpdata['region']);
         $url = $this->kwdObj->buildSearchUrl($tmpdata);
         $page = (int)$this->getJdPage($url, $data['nid']);
         $this->update($tmpdata, $page);
+        $minPage = $page;
+        $selected = $tmpdata;
+        sleep(1);
+
+        //价格作为搜索条件
+        $tmpdata = $data;
+        unset($tmpdata['region']);
+        $url = $this->kwdObj->buildSearchUrl($tmpdata);
+        $page = (int)$this->getJdPage($url, $data['nid']);
+        $this->update($tmpdata, $page);
+        if ($minPage == -1 && $page > 0) {
+            $minPage = $page;
+            $selected = $tmpdata;
+        }
+        if ($page > 0 && $page < $minPage) {
+            $minPage = $page;
+            $selected = $tmpdata;
+        }
 
         //specify the search condition
-        $this->specify($data, $page);
-        sleep(1);
+        $this->specify($selected, $minPage);
     }
 
     public function getJdPage($url, $nid) {
@@ -81,6 +110,12 @@ class crawler_jdpc {
         $upData['path'] = 'path';
         $upData['create_time'] = time();
         $upData['update_time'] = time();
+        if ($data['price_from']) {
+            $upData['price_from'] = $data['price_from'];
+        }
+        if ($data['price_to']) {
+            $upData['price_to'] = $data['price_to'];
+        }
 
         $sqlArr = array();
         foreach ($upData as $k => $v) {
