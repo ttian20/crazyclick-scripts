@@ -187,8 +187,12 @@ function crawler() {
         	$cmd = "/usr/bin/casperjs --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . $sleep_time ;
         }
         elseif ('jdpc' == $platform) {
+            $path = 'jdpc';
         	$data = array(
         	    'kwd' => urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
+                'path' => 'jdpc',
+                'price_from' => $row->price_from,
+                'price_to' => $row->price_to,
         	    'platform' => $platform,
         	);
         
