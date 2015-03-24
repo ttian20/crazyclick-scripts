@@ -9,22 +9,24 @@ class proxy {
             $keyList = 'proxy_list_https';
             $keySet = 'proxy_set_https';
             $keyMax = 'max_index_https';
+            $keyProxyTimes = 'proxy_times_https';
             $buffer = 700;
             $size = 200;
             $sleep = 2;
-            //$url = 'http://www.kuaidaili.com/api/getproxy/?orderid=902587087393360&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp2=1&sort=0&format=text&sep=2';
-            $url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
-            echo $url . "\n";
+            //$url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
+            $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
         }
         else {
             $keyList = 'proxy_list';
             $keySet = 'proxy_set';
             $keyMax = 'max_index';
-            $buffer = 1100;
-            $size = 200;
+            $keyProxyTimes = 'proxy_times_http';
+            $buffer = 1000;
+            $size = 100;
             $sleep = 2;
-            $url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=1&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
-            //$url = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2';
+            //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sp1=1&sp2=1&sort=2&dedup=1&format=text&sep=2&area=';
+            //$baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
+            $baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
         }
 
         $redis = new Redis();
@@ -38,6 +40,11 @@ class proxy {
         $userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.2; .NET4.0C; .NET4.0E)';
         $times = ceil($buffer / $size);
         for ($i = 0; $i < $times; $i++) {
+            $proxyTimes = $redis->incr($keyProxyTimes);
+            $province = $this->getProvince($proxyTimes);
+            $url = $baseurl . $province;
+            echo $url . "\n";
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
@@ -48,21 +55,34 @@ class proxy {
             }
             curl_close($ch);
             $content = trim($info);
-            $arr = explode("\n", $content);
-            if (count($arr) < 10) {
+            if (!$https) {
+                $content = substr($content, 3);
+                $arr = explode("\r\n", $content);
+                //$arr = explode("\n", $content);
+            }
+            else {
+                $arr = explode("\n", $content);
+            }
+            //echo iconv('UTF-8', 'GBK', $content) . "\n";
+            //echo $content."\n";
+            //$arr = explode("\n", $content);
+            echo count($arr) . "\n";
+            if (count($arr) < 3) {
                 echo "no proxy" . " available\n";
-                $redis->close();
-                return false;
+                //$redis->close();
+                //return false;
+                continue;
             }
 
             foreach ($arr as $proxy) {
                 $proxy = trim($proxy);
+                //echo $proxy . "\n";
                 if (!$redis->sIsMember($keySet, $proxy)) {
                     $redis->sAdd($keySet, $proxy);
                     $redis->rPush($keyList, $proxy);
                 }
             }
-            sleep(6);
+            sleep($sleep);
         }
 
         $redis->close();
@@ -123,6 +143,7 @@ class proxy {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50');
         if ($https) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -131,6 +152,7 @@ class proxy {
         $info = curl_exec($ch);
         if(curl_errno($ch))
         {
+            echo curl_error($ch) . "\n";
             curl_close($ch);
             return false;
         }
@@ -158,6 +180,7 @@ class proxy {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50');
         $res = curl_exec($ch);
 
         $proxyArr = explode(':', $proxy);
@@ -206,5 +229,45 @@ class proxy {
         $exchange = new AMQPExchange($channel);
         $exchange->setName('e_proxy');
         $exchange->publish($message, 'proxy');
+    }
+
+    public function getProvince($i = 0) {
+        $provinces = array(
+            '上海',
+            '北京',
+            '天津',
+            '重庆',
+            '安徽',
+            '福建',
+            '甘肃',
+            '广东',
+            '广西',
+            '贵州',
+            '海南',
+            '河北',
+            '河南',
+            '湖北',
+            '湖南',
+            '江苏',
+            //'江西',
+            '吉林',
+            '辽宁',
+            '宁夏',
+            '青海',
+            '山东',
+            '山西',
+            '陕西',
+            '云南',
+            //'四川',
+            '西藏',
+            '新疆',
+            '浙江',
+            '内蒙古',
+            '黑龙江',
+        );
+        $index = $i % count($provinces);
+        echo $index . "\n";
+        echo $provinces[$index] . "\n";
+        return urlencode(mb_convert_encoding($provinces[$index], 'UTF-8', 'GBK'));
     }
 }
