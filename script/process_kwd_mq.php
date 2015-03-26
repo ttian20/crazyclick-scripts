@@ -117,6 +117,10 @@ function crawler() {
            		    continue;
            	    }
         	    $proxy = $proxyObj->getProxy($obj->sid);
+                if (!$proxy) {
+                    cutback($mysqli, $obj);
+           		    continue;
+                }
         	    $search_url = $keyword->buildSearchUrl($data);
         	    $search_selector = "a[href*='id=".$nid."']";
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
@@ -140,6 +144,10 @@ function crawler() {
             		continue;
         	    }
         	    $proxy = $proxyObj->getProxy($obj->sid);
+                if (!$proxy) {
+                    cutback($mysqli, $obj);
+           		    continue;
+                }
         	    $search_url = $keyword->buildSearchUrl($data);
         	    $search_selector = "a[href*='id=".$nid."']";
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
@@ -163,6 +171,10 @@ function crawler() {
             		continue;
         	    }
         	    $proxy = $proxyObj->getProxy($obj->sid, true);
+                if (!$proxy) {
+                    cutback($mysqli, $obj);
+           		    continue;
+                }
         
         	    $search_url = $keyword->buildSearchUrl($data);
         	    $search_selector = "a[href*='id=".$nid."']";
@@ -179,6 +191,10 @@ function crawler() {
         	);
         
         	$proxy = $proxyObj->getProxy($obj->sid);
+            if (!$proxy) {
+                cutback($mysqli, $obj);
+           		continue;
+            }
         	$keyword = new keyword();
         	$search_url = $keyword->buildSearchUrl($data);
         	$search_selector = "div.d a[href*='" . $nid . "']";
@@ -199,6 +215,10 @@ function crawler() {
         	$ua = 'aa';
         	$keyword = new keyword();
         	$proxy = $proxyObj->getProxy($obj->sid);
+            if (!$proxy) {
+                cutback($mysqli, $obj);
+           		continue;
+            }
         
         	$search_url = $keyword->buildSearchUrl($data);
         	$search_selector = "div.p-name a[href*='" . $nid . "']";
@@ -233,6 +253,10 @@ function crawler() {
                     continue;
         	    }
         	    $proxy = $proxyObj->getProxy($obj->sid);
+                if (!$proxy) {
+                    cutback($mysqli, $obj);
+           		    continue;
+                }
         	    $search_url = $keyword->buildSearchUrl($data);
         	    $search_selector = ".m-p4p a[title='{$title}']";
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
@@ -256,6 +280,10 @@ function crawler() {
             		continue;
         	    }
         	    $proxy = $proxyObj->getProxy($obj->sid);
+                if (!$proxy) {
+                    cutback($mysqli, $obj);
+           		    continue;
+                }
         	    $search_url = $keyword->buildSearchUrl($data);
         	    $search_selector = ".m-p4p a[title='{$title}']";
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
@@ -279,7 +307,10 @@ function crawler() {
             		continue;
         	    }
         	    $proxy = $proxyObj->getProxy($obj->sid, true);
-        
+                if (!$proxy) {
+                    cutback($mysqli, $obj);
+           		    continue;
+                }
         	    $search_url = $keyword->buildSearchUrl($data);
         	    $search_selector = ".m-p4p a[title='{$title}']";
         	    $next_selector = "a.ui-page-s-next";

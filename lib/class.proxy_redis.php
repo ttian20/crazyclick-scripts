@@ -21,12 +21,12 @@ class proxy {
             $keySet = 'proxy_set';
             $keyMax = 'max_index';
             $keyProxyTimes = 'proxy_times_http';
-            $buffer = 1000;
-            $size = 100;
+            $buffer = 2100;
+            $size = 500;
             $sleep = 2;
             //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sp1=1&sp2=1&sort=2&dedup=1&format=text&sep=2&area=';
-            //$baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
-            $baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
+            $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
+            //$baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
         }
 
         $redis = new Redis();
@@ -43,6 +43,9 @@ class proxy {
             $proxyTimes = $redis->incr($keyProxyTimes);
             $province = $this->getProvince($proxyTimes);
             $url = $baseurl . $province;
+            if ($province == '%E5%8C%97%E4%BA%AC') {
+                $url .= '&vport=8123';
+            }
             echo $url . "\n";
 
             $ch = curl_init();
@@ -55,10 +58,15 @@ class proxy {
             }
             curl_close($ch);
             $content = trim($info);
+            if (strpos($content, '117')) {
+                preg_match_all("/117/", $content, $matches);
+                error_log($url . "\n", 3, "/tmp/ip.log");
+                error_log($content . "\n", 3, "/tmp/ip.log");
+            }
             if (!$https) {
-                $content = substr($content, 3);
-                $arr = explode("\r\n", $content);
-                //$arr = explode("\n", $content);
+                //$content = substr($content, 3);
+                //$arr = explode("\r\n", $content);
+                $arr = explode("\n", $content);
             }
             else {
                 $arr = explode("\n", $content);
@@ -108,6 +116,12 @@ class proxy {
         $redis->connect(REDIS_HOST, REDIS_PORT);
         $redis->select(0);
 
+        $maxIndex = $redis->get($keyMax);
+        $index = $redis->get($keyShop);
+        if ($index >= $maxIndex) {
+            return '';
+        }
+        
         $index = $redis->incr($keyShop);
         $proxy = $redis->lIndex($keyList, $index);
         
