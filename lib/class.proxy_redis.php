@@ -24,7 +24,7 @@ class proxy {
             $buffer = 2100;
             $size = 500;
             $sleep = 2;
-            //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sp1=1&sp2=1&sort=2&dedup=1&format=text&sep=2&area=';
+            //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sort=2&dedup=1&format=text&sep=2&area=';
             $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
             //$baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
         }
@@ -116,9 +116,9 @@ class proxy {
         $redis->connect(REDIS_HOST, REDIS_PORT);
         $redis->select(0);
 
-        $maxIndex = $redis->get($keyMax);
         $index = $redis->get($keyShop);
-        if ($index >= $maxIndex) {
+        $total = $redis->lLen($keyList);
+        if ($index >= $total) {
             return '';
         }
         

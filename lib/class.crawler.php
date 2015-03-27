@@ -42,7 +42,17 @@ class crawler {
             //1. 无附加搜索条件
             //2. 单纯价格作搜索条件
             $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy($data['sid'], true);
+
+            $shopIdArr = array('111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999');
+            $rand = rand(0, 8);
+            $shopId = $shopIdArr[$rand];
+
+            $this->proxy = $proxyObj->getProxy($shopId, true);
+            if ('' == $this->proxy) {
+                echo "no proxy, sleep 20s\n";
+                sleep(20);
+                return;
+            }
 
             //无附加搜索条件
             $tmpdata = $data;
@@ -79,10 +89,22 @@ class crawler {
             //3. 单纯地区作搜索条件
             //4  地区和价格同时作搜索条件
             $proxyObj = new proxy();
-            $this->proxy = $proxyObj->getProxy($data['sid']);
+            $shopIdArr = array('111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999');
+            $rand = rand(0, 8);
+            $shopId = $shopIdArr[$rand];
+            echo $shopId . "\n";
+            $this->proxy = $proxyObj->getProxy($shopId);
+            if ('' == $this->proxy) {
+                echo "no proxy, sleep 20s\n";
+                sleep(20);
+                return;
+            }
 
-            //地区和价格同时作搜索条件
+            //无附加搜索条件
             $tmpdata = $data;
+            unset($tmpdata['price_from']);
+            unset($tmpdata['price_to']);
+            unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
@@ -92,11 +114,8 @@ class crawler {
             $selected = $tmpdata;
             sleep(1);
 
-            //无附加搜索条件
+            //地区和价格同时作搜索条件
             $tmpdata = $data;
-            unset($tmpdata['price_from']);
-            unset($tmpdata['price_to']);
-            unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
             $page = (int)$this->getPage($url);
             $this->update($tmpdata, $page);
@@ -159,6 +178,7 @@ class crawler {
         $curl->get($url, array(), $this->proxy);
         $curl->setUserAgent($this->getUserAgent());
         echo $curl->http_status_code . "\n";
+        echo $this->proxy . "\n";
         if (200 == $curl->http_status_code) {
             $body = $curl->response;
             $findme = '"nid":"' . $this->nid . '"';
@@ -209,8 +229,9 @@ class crawler {
             }
         }
         else {
-            echo $curl->response . "\n";
-            print_r($curl->response_headers);
+            //echo $curl->http_status_code . "\n";
+            //echo $curl->response . "\n";
+            //print_r($curl->response_headers);
             return -1;
         }
     }
