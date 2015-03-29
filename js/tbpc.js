@@ -18,6 +18,7 @@ var sleep_time = parseInt(casper.cli.get(3)) * 1000;
 var shop_type = '';
 
 var search_times = 0;
+var scroll_wait = 2000;
 
 casper.start(search_url);
 
@@ -29,6 +30,27 @@ function search(flag) {
         });
         //console.log(search_times);
     }
+
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  = 0;
+    });
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 900;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 900;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 900;
+    });
+    casper.wait(scroll_wait, function(){
+        this.scrollToBottom();
+    });
+    casper.wait(scroll_wait);
+
     casper.then(function(){
         if (this.exists(search_selector)) {
             res = casper.evaluate(function(f){
@@ -47,9 +69,7 @@ function search(flag) {
                 shop_type = 'c';
             }
             //console.log(shop_type);
-            this.wait(1000, function(){
-                this.click(search_selector);
-            });
+
         }
         else {
             if (search_times >= 10) {
@@ -63,6 +83,30 @@ function search(flag) {
         }
     });
 }
+
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  = 0;
+});
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+casper.wait(scroll_wait, function(){
+    this.scrollToBottom();
+});
+casper.wait(scroll_wait);
+
+this.wait(1000, function(){
+    this.click(search_selector);
+});
 
 casper.then(function(){
     left(shop_type);
