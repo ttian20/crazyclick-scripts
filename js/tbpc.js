@@ -104,8 +104,10 @@ casper.wait(scroll_wait, function(){
 });
 casper.wait(scroll_wait);
 
-this.wait(1000, function(){
-    this.click(search_selector);
+casper.then(function(){
+    this.wait(1000, function(){
+        this.click(search_selector);
+    });
 });
 
 casper.then(function(){
