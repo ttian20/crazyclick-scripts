@@ -135,6 +135,7 @@ class proxy {
             return '';
         }
 
+/*
         if ($index < ($total - 1000)) {
             $index = strval($total - 1000);
             $redis->set($keyShop, $index);
@@ -142,10 +143,14 @@ class proxy {
         else {
             $index = $redis->incr($keyShop);
         }
+*/
         
+        $index = $redis->incr($keyShop);
         $proxy = $redis->lIndex($keyList, $index);
+
+        $proxyKey = 'status_' . $proxy;
         
-        while (!$this->_testProxy($proxy, $https)) {
+        while ($redis->get($proxyKey) >= 6 || !$this->_testProxy($proxy, $https)) {
             $index = $redis->incr($keyShop);
             $proxy = $redis->lIndex($keyList, $index);
         }
@@ -185,7 +190,8 @@ class proxy {
         
         curl_exec($ch);
         $info = curl_getinfo($ch);
-        if (curl_errno($ch) || $info['http_code'] != '200') {
+        //if (curl_errno($ch) || $info['http_code'] != '200') {
+        if (curl_errno($ch)) {
             echo curl_error($ch) . "\n";
             curl_close($ch);
             return false;
