@@ -21,8 +21,8 @@ class proxy {
             $keySet = 'proxy_set';
             $keyMax = 'max_index';
             $keyProxyTimes = 'proxy_times_http';
-            $buffer = 2100;
-            $size = 500;
+            $buffer = 500;
+            $size = 50;
             $sleep = 2;
             //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sort=2&dedup=1&format=text&sep=2&area=';
             $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
@@ -39,12 +39,15 @@ class proxy {
 
         $userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.2; .NET4.0C; .NET4.0E)';
         $times = ceil($buffer / $size);
+        $proxys = array();
         for ($i = 0; $i < $times; $i++) {
             $proxyTimes = $redis->incr($keyProxyTimes);
             $province = $this->getProvince($proxyTimes);
             $url = $baseurl . $province;
-            if ($province == '%E5%8C%97%E4%BA%AC') {
-                $url .= '&vport=8123';
+            //if ($province == '%E5%8C%97%E4%BA%AC') {
+            if (in_array($province, array('%E5%8C%97%E4%BA%AC', '%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
+            //if (in_array($province, array('%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
+                $url .= '&port=8123&vport=1';
             }
             echo $url . "\n";
 
@@ -58,11 +61,13 @@ class proxy {
             }
             curl_close($ch);
             $content = trim($info);
+            /*
             if (strpos($content, '117')) {
                 preg_match_all("/117/", $content, $matches);
                 error_log($url . "\n", 3, "/tmp/ip.log");
                 error_log($content . "\n", 3, "/tmp/ip.log");
             }
+            */
             if (!$https) {
                 //$content = substr($content, 3);
                 //$arr = explode("\r\n", $content);
@@ -84,14 +89,22 @@ class proxy {
 
             foreach ($arr as $proxy) {
                 $proxy = trim($proxy);
+                $proxys[] = $proxy;
                 //echo $proxy . "\n";
+
+            }
+            sleep($sleep);
+        }
+        if ($proxys) {
+            shuffle($proxys);
+            foreach ($proxys as $proxy) {
                 if (!$redis->sIsMember($keySet, $proxy)) {
                     $redis->sAdd($keySet, $proxy);
                     $redis->rPush($keyList, $proxy);
                 }
             }
-            sleep($sleep);
         }
+
 
         $redis->close();
     }
@@ -121,8 +134,14 @@ class proxy {
         if ($index >= $total) {
             return '';
         }
+
+        if ($index < ($total - 1000)) {
+            $index = $redis->set(strval($total-1000));
+        }
+        else {
+            $index = $redis->incr($keyShop);
+        }
         
-        $index = $redis->incr($keyShop);
         $proxy = $redis->lIndex($keyList, $index);
         
         while (!$this->_testProxy($proxy, $https)) {
@@ -263,7 +282,7 @@ class proxy {
             '湖北',
             '湖南',
             '江苏',
-            //'江西',
+            '江西',
             '吉林',
             '辽宁',
             '宁夏',
@@ -272,7 +291,7 @@ class proxy {
             '山西',
             '陕西',
             '云南',
-            //'四川',
+            '四川',
             '西藏',
             '新疆',
             '浙江',
