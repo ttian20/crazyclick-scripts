@@ -44,11 +44,13 @@ class proxy {
             $proxyTimes = $redis->incr($keyProxyTimes);
             $province = $this->getProvince($proxyTimes);
             $url = $baseurl . $province;
+            /*
             //if ($province == '%E5%8C%97%E4%BA%AC') {
             if (in_array($province, array('%E5%8C%97%E4%BA%AC', '%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
             //if (in_array($province, array('%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
                 $url .= '&port=8123&vport=1';
             }
+            */
             echo $url . "\n";
 
             $ch = curl_init();
@@ -129,40 +131,28 @@ class proxy {
         $redis->connect(REDIS_HOST, REDIS_PORT);
         $redis->select(0);
 
-        $index = $redis->get($keyShop);
+        $index = $redis->exists($keyShop) ? $redis->get($keyShop) : 0;
         $total = $redis->lLen($keyList);
-        if ($index >= $total) {
-            return '';
-        }
+        $proxy = '';
 
-/*
-        if ($index < ($total - 1000)) {
-            $index = strval($total - 1000);
-            $redis->set($keyShop, $index);
-        }
-        else {
-            $index = $redis->incr($keyShop);
-        }
-*/
-        
-        $index = $redis->incr($keyShop);
-        $proxy = $redis->lIndex($keyList, $index);
-
-        $proxyKey = 'status_' . $proxy;
-        
-        while ($redis->get($proxyKey) >= 6 || !$this->_testProxy($proxy, $https)) {
-            $index = $redis->incr($keyShop);
+        while ($index < $total) {
             $proxy = $redis->lIndex($keyList, $index);
+            if (!$this->_testProxy($proxy, $https)) {
+                $index = $redis->incr($keyShop);
+                $total = $redis->lLen($keyList);
+                continue ;
+            }
+            else {
+                $index = $redis->incr($keyShop);
+            }
         }
 
         $maxIndex = $redis->get($keyMax);
         if ($index > $maxIndex) {
-            #error_log("shop id is " . $shopId . "\n", 3, "/tmp/proxy.log");
-            #error_log("index is " . $index . "\n", 3, "/tmp/proxy.log");
-            #error_log("max index is " . $maxIndex . "\n", 3, "/tmp/proxy.log");
             $redis->set($keyMax, $index);
         }
-      
+        
+        //$proxyKey = 'status_' . $proxy;
         $redis->close();
         return $proxy;
     }
