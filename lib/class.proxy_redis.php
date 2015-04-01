@@ -152,7 +152,7 @@ class proxy {
 
         $proxyKey = 'status_' . $proxy;
         
-        while ($this->get($proxyKey) >= 6 || !$this->_testProxy($proxy, $https)) {
+        while ($redis->get($proxyKey) >= 6 || !$this->_testProxy($proxy, $https)) {
             $index = $redis->incr($keyShop);
             $proxy = $redis->lIndex($keyList, $index);
         }
