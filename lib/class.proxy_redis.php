@@ -144,6 +144,7 @@ class proxy {
             }
             else {
                 $index = $redis->incr($keyShop);
+                break;
             }
         }
 
