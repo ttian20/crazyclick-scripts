@@ -136,7 +136,8 @@ class proxy {
         }
 
         if ($index < ($total - 1000)) {
-            $index = $redis->set(strval($total-1000));
+            $index = strval($total - 1000);
+            $redis->set($keyShop, $index);
         }
         else {
             $index = $redis->incr($keyShop);
