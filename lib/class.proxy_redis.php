@@ -45,10 +45,12 @@ class proxy {
             $province = $this->getProvince($proxyTimes);
             $url = $baseurl . $province;
             //if ($province == '%E5%8C%97%E4%BA%AC') {
+            /*
             if (in_array($province, array('%E5%8C%97%E4%BA%AC', '%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
             //if (in_array($province, array('%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
                 $url .= '&port=8123&vport=1';
             }
+            */
             echo $url . "\n";
 
             $ch = curl_init();
@@ -183,9 +185,9 @@ class proxy {
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         }
         
-        $info = curl_exec($ch);
-        if(curl_errno($ch))
-        {
+        curl_exec($ch);
+        $info = curl_getinfo($ch);
+        if (curl_errno($ch) || $info['http_code'] != '200') {
             echo curl_error($ch) . "\n";
             curl_close($ch);
             return false;
