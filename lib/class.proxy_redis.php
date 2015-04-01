@@ -140,6 +140,7 @@ class proxy {
             if (!$this->_testProxy($proxy, $https)) {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
+                $proxy = '';
                 continue ;
             }
             else {
