@@ -45,9 +45,7 @@ class proxy {
             $province = $this->getProvince($proxyTimes);
             $url = $baseurl . $province;
             /*
-            //if ($province == '%E5%8C%97%E4%BA%AC') {
             if (in_array($province, array('%E5%8C%97%E4%BA%AC', '%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
-            //if (in_array($province, array('%E6%B1%9F%E8%A5%BF', '%E5%9B%9B%E5%B7%9D'))) {
                 $url .= '&port=8123&vport=1';
             }
             */
@@ -131,20 +129,20 @@ class proxy {
         $redis->connect(REDIS_HOST, REDIS_PORT);
         $redis->select(0);
 
-        $index = $redis->exists($keyShop) ? $redis->get($keyShop) : 0;
+        //$index = $redis->exists($keyShop) ? intval($redis->get($keyShop)) : 0;
+        $index = $redis->incr($keyShop);
         $total = $redis->lLen($keyList);
         $proxy = '';
 
-        while ($index < $total) {
+        while ($index < ($total - 10)) {
             $proxy = $redis->lIndex($keyList, $index);
-            if (!$this->_testProxy($proxy, $https)) {
+            if (!$proxy || !$this->_testProxy($proxy, $https)) {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
                 $proxy = '';
-                continue ;
             }
             else {
-                $index = $redis->incr($keyShop);
+                //$index = $redis->incr($keyShop);
                 break;
             }
         }
