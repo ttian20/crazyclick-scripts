@@ -135,7 +135,7 @@ if (shop_type == 'b') {
             });
         }
         else {
-            console.log('200-405');
+            console.log('500');
             casper.exit();
         }
     });
@@ -212,7 +212,7 @@ else {
             });
         }
         else {
-            console.log('200-405');
+            console.log('500');
             casper.exit();
         }
     });
