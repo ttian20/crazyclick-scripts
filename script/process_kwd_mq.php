@@ -327,19 +327,17 @@ function crawler() {
             $mysqli->query($sql);
 
             echo $mysqli->error . "\n";
+
+            if ('500' == $status_code) {
+                $proxyObj->setInvalid($proxy);
+            }
+        }
+        else {
+            $proxyObj->setValid($proxy);
         }
 
         $sql = "INSERT INTO click_log (kid, path, log, proxy, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', '{$proxy}', " . time(). ")";
         $mysqli->query($sql);
-
-        if (!in_array($status_code, array('404', '200'))) {
-            $redis = new Redis();
-            $redis->connect(REDIS_HOST, REDIS_PORT);
-            $redis->select(0);
-            $proxyKey = 'status_' . $proxy;
-            $redis->incr($proxyKey);
-            $redis->close();
-        }
     }
 }
 

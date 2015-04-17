@@ -14,7 +14,8 @@ class proxy {
             $size = 200;
             $sleep = 2;
             //$url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
-            $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
+            //$baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
+            $baseurl = 'http://118.244.186.157:63789/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
         }
         else {
             $keyList = 'proxy_list';
@@ -25,7 +26,8 @@ class proxy {
             $size = 50;
             $sleep = 2;
             //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sort=2&dedup=1&format=text&sep=2&area=';
-            $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
+            //$baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
+            $baseurl = 'http://118.244.186.157:63789/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
             //$baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
         }
 
@@ -95,17 +97,38 @@ class proxy {
             }
             sleep($sleep);
         }
+
+/******************** amqp ********************/
+/*
+        $params = array('host' =>'10.168.45.191',  
+                        'port' => 5672,  
+                        'login' => 'guest',  
+                        'password' => 'guest',  
+                        'vhost' => '/proxy');  
+
+        $conn = new AMQPConnection($params);  
+        $conn->connect();
+        $channel = new AMQPChannel($conn);
+        $exchange = new AMQPExchange($channel);
+        $exchange->setName($https ? 'e_proxy_https' : 'e_proxy_http');
+        $exchange->setType(AMQP_EX_TYPE_FANOUT);
+        $exchange->setFlags(AMQP_DURABLE | AMQP_AUTODELETE);
+        $exchange->declareExchange();
+        */
+/******************** amqp ********************/
+
         if ($proxys) {
             shuffle($proxys);
             foreach ($proxys as $proxy) {
                 if (!$redis->sIsMember($keySet, $proxy)) {
                     $redis->sAdd($keySet, $proxy);
                     $redis->rPush($keyList, $proxy);
+                    //$exchange->publish($proxy);
                 }
             }
         }
 
-
+        //$conn->disconnect();
         $redis->close();
     }
 
@@ -136,7 +159,10 @@ class proxy {
 
         while ($index < ($total - 10)) {
             $proxy = $redis->lIndex($keyList, $index);
-            if (!$proxy || !$this->_testProxy($proxy, $https)) {
+            $proxyStatusKey = 'status_' . $proxy;
+            $proxyStatusValue = intval($redis->get($proxyStatusKey));
+            $proxyValid = ($proxyStatusValue <= 5) ? true : false;
+            if (!$proxy || !$proxyValid || !$this->_testProxy($proxy, $https)) {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
                 $proxy = '';
@@ -152,7 +178,6 @@ class proxy {
             $redis->set($keyMax, $index);
         }
         
-        //$proxyKey = 'status_' . $proxy;
         $redis->close();
         return $proxy;
     }
@@ -259,6 +284,24 @@ class proxy {
         $exchange = new AMQPExchange($channel);
         $exchange->setName('e_proxy');
         $exchange->publish($message, 'proxy');
+    }
+
+    public function setInvalid($ip) {
+        $redis = new Redis();
+        $redis->connect(REDIS_HOST, REDIS_PORT);
+        $redis->select(0);
+        $proxyKey = 'status_' . $ip;
+        $redis->incr($proxyKey);
+        $redis->close();
+    }
+
+    public function setValid($ip) {
+        $redis = new Redis();
+        $redis->connect(REDIS_HOST, REDIS_PORT);
+        $redis->select(0);
+        $proxyKey = 'status_' . $ip;
+        $redis->del($proxyKey);
+        $redis->close();
     }
 
     public function getProvince($i = 0) {
