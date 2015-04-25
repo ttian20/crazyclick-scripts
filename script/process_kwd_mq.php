@@ -331,9 +331,14 @@ function crawler() {
             if ('500' == $status_code) {
                 $proxyObj->setInvalid($proxy);
             }
+
+            if ('404' == $status_code) {
+                $keyword->setNotFound($obj->id);
+            }
         }
         else {
             $proxyObj->setValid($proxy);
+            $keyword->setFound($obj->id);
         }
 
         $sql = "INSERT INTO click_log (kid, path, log, proxy, created_at) VALUES ({$obj->id}, '{$path}', '{$output}', '{$proxy}', " . time(). ")";

@@ -75,4 +75,24 @@ class keyword {
         $rand = rand(0, $count - 1);
         return $data[$rand]; 
     }
+
+    public function setNotFound($kid) {
+        $redis = new Redis();
+        $redis->connect(REDIS_HOST, REDIS_PORT);
+        $redis->select(0);
+        $key = 'notfound_' . $kid;
+        $redis->incr($key);
+        $redis->close();
+    }
+
+    public function setFound($kid) {
+        $redis = new Redis();
+        $redis->connect(REDIS_HOST, REDIS_PORT);
+        $redis->select(0);
+        $key = 'notfound_' . $kid;
+        if ($redis->exists($key)) {
+            $redis->set($key, '0');
+        }
+        $redis->close();
+    }
 }
