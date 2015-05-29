@@ -318,6 +318,28 @@ function crawler() {
         	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $shop_type . "\"";
         	}
         }
+        elseif ('ju' == $platform) {
+        	$ua = 'aa';
+        	$keyword = new keyword();
+
+            $proxy = $proxyObj->getProxy($obj->sid);
+            if (!$proxy) {
+                cutback($mysqli, $obj);
+                continue;
+            }
+            $data = array(
+                'path' => 'ju',
+                'kwd' => $kwd,
+                'platform' => $platform,
+            );
+            $search_url = $keyword->buildSearchUrl($data);
+            $search_selector = "a[href*='item_id=".$nid."']";
+            $click_selector = 'div.normal-pic a';
+            $next_selector = 'a.pg-next';
+        
+            $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" \"" . $click_selector . "\" " . $sleep_time . " \"" . $shop_type . "\"";
+
+        }
     
         echo $cmd . "\n";
         $output = system($cmd);

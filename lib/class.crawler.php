@@ -60,6 +60,7 @@ class crawler {
             unset($tmpdata['price_to']);
             unset($tmpdata['region']);
             $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            echo $url . "\n";
             $page = $this->getTmallPage($url, $this->nid);
             $this->update($tmpdata, $page);
             $minPage = $page;
@@ -82,7 +83,7 @@ class crawler {
             }
             $this->specify($selected, $minPage);
         }
-        else {
+        elseif ($data['path'] == 'taobao' || $data['path'] == 'taobao2tmall') {
             //4种条件搜索
             //1. 无附加搜索条件
             //2. 单纯价格作搜索条件
@@ -112,6 +113,10 @@ class crawler {
             //echo $page."\n";
             $minPage = $page;
             $selected = $tmpdata;
+            if ($page > 0 && $page < 8) {
+                $this->specify($selected, $minPage);
+                return ;
+            }
             sleep(1);
 
             //地区和价格同时作搜索条件
@@ -170,6 +175,28 @@ class crawler {
             //specify the search condition
             $this->specify($selected, $minPage);
         }
+        else {
+            $proxyObj = new proxy();
+            $shopIdArr = array('111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999');
+            $rand = rand(0, 8);
+            $shopId = $shopIdArr[$rand];
+            echo $shopId . "\n";
+            $this->proxy = $proxyObj->getProxy($shopId);
+            if ('' == $this->proxy) {
+                echo "no proxy, sleep 20s\n";
+                sleep(20);
+                return;
+            }
+
+            $tmpdata = $data;
+            unset($tmpdata['price_from']);
+            unset($tmpdata['price_to']);
+            unset($tmpdata['region']);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            $page = (int)$this->getJuPage($url);
+            $this->update($tmpdata, $page);
+            $this->specify($tmpdata, $page);
+        }
     }
 
     public function getPage($url, $i = 1) {
@@ -177,7 +204,7 @@ class crawler {
         echo $url . "\n";
         $curl->get($url, array(), $this->proxy);
         $curl->setUserAgent($this->getUserAgent());
-        echo $curl->http_status_code . "\n";
+        echo "http code is: " . $curl->http_status_code . "\n";
         echo $this->proxy . "\n";
         if (200 == $curl->http_status_code) {
             $body = $curl->response;
@@ -195,7 +222,7 @@ class crawler {
                     return -1;
                 }
 
-                $baseUrlPattern = "/\"pager\":\"(.*?)\"/";
+                $baseUrlPattern = "/\"pager\":\"(.*?)\"/s";
                 preg_match_all($baseUrlPattern, $body, $match);
                 print_r($match);
                 if (!$match[1][0]) {
@@ -209,14 +236,23 @@ class crawler {
                 if (!$pageMatch[1][0]) {
                     return -1;
                 }
+                print_r($pageMatch);
                 $pageSize = $pageMatch[1][0];
                 $totalPage = $pageMatch[2][0];
                 $currentPage = $pageMatch[3][0];
                 if ($totalPage > $currentPage) {
                     $pageNum = $currentPage * $pageSize;
-                    $url = substr($baseUrl, 0, strrpos($baseUrl, '=')) . '=' . $pageNum;
+                    //$url = substr($baseUrl, 0, strrpos($baseUrl, '=')) . '=' . $pageNum;
+                    echo "current is " . $url . "\n";
+                    $pos = strrpos($url, '&s=');
+                    if (false === $pos) {
+                        $url .= '&bcoffset=1&s=' . $pageNum;
+                    }
+                    else {
+                        $url = substr($url, 0, strrpos($url, '&s=')) . '&s=' . $pageNum;
+                    }
                     $url = stripslashes($url);
-                    echo $url . "\n";
+                    echo "url is " . $url . "\n";
                 }
                 else {
                     return -1;
@@ -270,6 +306,24 @@ class crawler {
         }
     }
 
+    public function getJuPage($url) {
+        $search_selector = "a[href*='item_id=".$this->nid."']";
+        $link_selector = "";
+        $next_selector = "a.pg-next";
+        $jsfile = JS_DIR . 'tm.js';
+    
+        $cmd = "/usr/bin/casperjs " . $jsfile . " --proxy=".$this->proxy." --output-encoding=gbk --script-encoding=gbk \"".$url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\"";
+        $output = system($cmd);
+
+        $len = strlen($output);
+        if ($len < 3 && $len > 0) {
+            return $output;
+        }
+        else {
+            return -1;
+        }
+    }
+
     public function getUserAgent() {
         $data = array(
             'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
@@ -298,6 +352,9 @@ class crawler {
                 break;
             case 'tmall':
                 $path = 'path3';
+                break;
+            case 'ju':
+                $path = 'ju';
                 break;
         }
 
@@ -333,57 +390,77 @@ class crawler {
     public function specify($data, $page) {
         switch ($data['path']) {
             case 'taobao':
-                $path = 'path1';
+                $path = 'path1_';
                 break;
             case 'taobao2tmall':
-                $path = 'path2';
+                $path = 'path2_';
                 break;
             case 'tmall':
-                $path = 'path3';
+                $path = 'path3_';
+                break;
+            case 'ju':
+                $path = '';
                 break;
         }
 
         $upData = array();
         if (isset($data['region']) && $data['region']) {
-            $upData[$path . '_region'] = $data['region']; 
+            $upData[$path . 'region'] = $data['region']; 
         }
         else {
-            $upData[$path . '_region'] = ''; 
+            $upData[$path . 'region'] = ''; 
         }
 
         if (isset($data['price_from']) && $data['price_from']) {
-            $upData[$path . '_price_from'] = $data['price_from']; 
+            $upData[$path . 'price_from'] = $data['price_from']; 
         }
         else {
-            $upData[$path . '_price_from'] = 0; 
+            $upData[$path . 'price_from'] = 0; 
         }
 
         if (isset($data['price_to']) && $data['price_to']) {
-            $upData[$path . '_price_to'] = $data['price_to']; 
+            $upData[$path . 'price_to'] = $data['price_to']; 
         }
         else {
-            $upData[$path . '_price_to'] = 0; 
+            $upData[$path . 'price_to'] = 0; 
         }
 
-        $upData[$path . '_page'] = $page;
+        $upData[$path . 'page'] = $page;
 
         $sqlArr = array();
+        if ('ju' == $data['path']) {
+            unset($upData['region']);
+            unset($upData['price_from']);
+            unset($upData['price_to']);
+        }
         foreach ($upData as $k => $v) {
             $sqlArr[] = $k . " = '" . $v . "'"; 
         }
         $sqlStr = implode(',', $sqlArr);
-        $sql = "UPDATE keyword_{$data['platform']} SET " . $sqlStr . " WHERE kid = {$data['id']}";
+        $sql = "SELECT * FROM keyword WHERE id = {$data['id']} AND status = 'active'";
         echo $sql . "\n";
-        $this->db->query($sql);
-        if ($page != -1) {
-            $sql = "UPDATE keyword SET is_detected = 1 WHERE id = {$data['id']}";
-            echo $sql . "\n";
-            $this->db->query($sql);
+        $result = $this->db->query($sql);
+        if (!$result) {
+            echo "no record\n";
+            return ;
         }
-        else {
-            $sql = "UPDATE keyword SET detect_times = detect_times + 1 WHERE id = {$data['id']}";
+        $obj = $result->fetch_object();
+        //var_dump($obj->is_detected);
+        echo "\n";
+        if (!$obj->is_detected) {
+            $sql = "UPDATE keyword_{$data['platform']} SET " . $sqlStr . " WHERE kid = {$data['id']}";
             echo $sql . "\n";
             $this->db->query($sql);
+            if ($page != -1) {
+                $sql = "UPDATE keyword SET is_detected = 1 WHERE id = {$data['id']}";
+                echo $sql . "\n";
+                $this->db->query($sql);
+            }
+            else {
+                $sql = "UPDATE keyword SET detect_times = detect_times + 1 WHERE id = {$data['id']}";
+                echo $sql . "\n";
+                $this->db->query($sql);
+            }
         }
     }
 }

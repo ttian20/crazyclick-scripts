@@ -51,6 +51,9 @@ class keyword {
                 $search_url .= '&qrst=1&rt=1&stop=1&sttr=1&ev=exprice_' . intval($data['price_from']) . '-' . intval($data['price_to']). '%40&uc=0#select';
             }
         }
+        elseif ('ju' == $data['platform']) {
+            $search_url = 'http://ju.taobao.com/search.htm?words=' . $kwd;
+        }
 
         return $search_url;
     }

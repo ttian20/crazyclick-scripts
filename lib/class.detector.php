@@ -6,7 +6,7 @@ class detector {
     }
 
     public function run($obj) {
-        if (in_array($obj->platform, array('tbpc', 'tbad', 'tbmobi'))) {
+        if (in_array($obj->platform, array('tbpc', 'tbad', 'tbmobi', 'ju'))) {
             if ('b' == $obj->shop_type) {
                 $prices = $this->getTmallPrice($obj); 
             }
@@ -26,11 +26,13 @@ class detector {
         $rand = rand(0, 8);
         $shopId = $shopIdArr[$rand];
         $proxy = $proxyObj->getProxy($shopId);
+        echo $proxy . "\n";
 
         $url = 'http://detail.tmall.com/item.htm?id=' . $kwd->nid;
         $ch = curl_init();
         $user_agent = $this->getUserAgent();
         curl_setopt($ch, CURLOPT_URL, $url);
+        echo $url . "\n";
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -39,13 +41,19 @@ class detector {
         curl_close($ch);
         $content = trim($info);
 
-        $shop_id_pattern = '/<meta name="microscope-data" content="pageId=\d+;prototypeId=\d+;siteId=\d+; shopId=(\d+); userid=\d+;">/';
+        $shop_id_pattern = '/<meta name="microscope-data" content="pageId=\d*;prototypeId=\d*;siteId=\d*; shopId=(\d*); userid=\d*;">/';
         preg_match_all($shop_id_pattern, $content, $matches);
+        print_r($matches);
         $shop_id = $matches[1][0];
         
         $pattern = "/var l,url='(.*?)';/";
         preg_match_all($pattern, $content, $matches);
         $detail_url = $matches[1][0];
+        echo $detail_url . "\n";
+        if (strpos($detail_url, 'http') === false) {
+            $detail_url = 'http:' . $detail_url;
+        }
+        echo $detail_url . "\n";
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $detail_url);
@@ -57,7 +65,8 @@ class detector {
         $info = curl_exec($ch);
         curl_close($ch);
         $content = trim($info);
-        $price_pattern = '/"price":"([.0-9]+?)",/';
+        //$price_pattern = '/"price":"([.0-9]+?)",/';
+        $price_pattern = '/"price":"([.0-9]+?)"/';
         preg_match_all($price_pattern, $content, $matches);
         if ($matches) {
             foreach ($matches[1] as $k => $p) {
@@ -79,6 +88,7 @@ class detector {
         $region_pattern = '/"deliveryAddress":"(.*?)",/';
         preg_match_all($region_pattern, $content, $matches);
         $region = '';
+        print_r($matches);
         if ($matches) {
             $region = $matches[1][0];
             $provinces = $this->getProvinces();
@@ -94,10 +104,12 @@ class detector {
         $rand = rand(0, 8);
         $shopId = $shopIdArr[$rand];
         $proxy = $proxyObj->getProxy($shopId);
+        echo $proxy . "\n";
         $url = 'http://item.taobao.com/item.htm?id=' . $kwd->nid;
         $user_agent = $this->getUserAgent();
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
+        echo $url . "\n";
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -105,8 +117,7 @@ class detector {
         $info = curl_exec($ch);
         curl_close($ch);
         $content = trim($info);
-        //echo $content . "\n";
-        $shop_id_pattern = '/<meta name="microscope-data" content="pageId=\d+;prototypeId=\d+;siteId=\d+; shopId=(\d+); userid=\d+;">/';
+        $shop_id_pattern = '/<meta name="microscope-data" content="pageId=\d*;prototypeId=\d*;siteId=\d*; shopId=(\d*); userid=\d*;">/';
         preg_match_all($shop_id_pattern, $content, $matches);
         $shop_id = $matches[1][0];
         
@@ -118,7 +129,11 @@ class detector {
         $pattern = '/var b="(.*?)",/';
         preg_match_all($pattern, $content, $matches);
         $detail_url = $matches[1][0];
-        //echo $detail_url . "\n";
+        echo $detail_url . "\n";
+        if (strpos($detail_url, 'http') === false) {
+            $detail_url = 'http:' . $detail_url;
+        }
+        echo $detail_url . "\n";
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $detail_url);
