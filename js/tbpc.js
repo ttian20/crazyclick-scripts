@@ -211,6 +211,11 @@ else {
                 this.click(".tb-shop-name a");
             });
         }
+        else if (this.exists(".shop-name-wrap a")) {
+            this.wait(sleep_time, function(){
+                this.click(".shop-name-wrap a");
+            });
+        }
         else {
             console.log('500');
             casper.exit();
