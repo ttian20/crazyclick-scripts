@@ -110,6 +110,25 @@ casper.then(function(){
     });
 });
 
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  = 0;
+});
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+casper.wait(scroll_wait, function(){
+    this.scrollToBottom();
+});
+
 casper.then(function(){
     left(shop_type);
 });
