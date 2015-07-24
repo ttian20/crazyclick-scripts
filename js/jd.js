@@ -14,6 +14,7 @@ var search_url = casper.cli.get(0);
 var search_selector = casper.cli.get(1);
 var next_selector = casper.cli.get(2)
 var search_times = 0;
+var scroll_wait = 2000;
 
 casper.start(search_url);
 
@@ -23,8 +24,40 @@ function search(flag) {
         casper.wait(1000, function(){
             this.click(next_selector);
         });
-        //console.log(search_times);
     }
+
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  = 0;
+    });
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 200;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 200;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 200;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 200;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 200;
+    });
+    casper.wait(scroll_wait);
+    casper.thenEvaluate(function(){
+        document.body.scrollTop  += 200;
+    });
+    casper.wait(scroll_wait, function(){
+        this.scrollToBottom();
+    });
+    casper.wait(scroll_wait);
+
     casper.then(function(){
         if (this.exists(search_selector)) {
             res = casper.evaluate(function(f){
