@@ -61,6 +61,7 @@ class detector {
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
         curl_setopt($ch, CURLOPT_REFERER, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
         $info = curl_exec($ch);
         curl_close($ch);

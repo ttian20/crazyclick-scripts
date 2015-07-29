@@ -116,7 +116,7 @@ function crawler() {
                     cutback($mysqli, $obj);
            		    continue;
            	    }
-        	    $proxy = $proxyObj->getProxy($obj->sid);
+        	    $proxy = $proxyObj->getProxy($obj->sid, true);
                 if (!$proxy) {
                     cutback($mysqli, $obj);
            		    continue;
@@ -125,7 +125,8 @@ function crawler() {
         	    $search_selector = "a[href*='id=".$nid."']";
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
         	
-        	    $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    //$cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --ignore-ssl-errors=true --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
         	}
         	elseif ($rand <= $path2) {
         	    //taobao search tmall tab
@@ -143,7 +144,7 @@ function crawler() {
             		cutback($mysqli, $obj);
             		continue;
         	    }
-        	    $proxy = $proxyObj->getProxy($obj->sid);
+        	    $proxy = $proxyObj->getProxy($obj->sid, true);
                 if (!$proxy) {
                     cutback($mysqli, $obj);
            		    continue;
@@ -152,7 +153,8 @@ function crawler() {
         	    $search_selector = "a[href*='id=".$nid."']";
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
         	
-        	    $cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    //$cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --ignore-ssl-errors=true --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
         	}
         	else {
         	    //tmall search

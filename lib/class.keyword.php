@@ -10,7 +10,7 @@ class keyword {
             $date = $data['date'];
             switch ($data['path']) {
                 case 'taobao':
-                    $search_url = 'http://s.taobao.com/search?&initiative_id=tbindexz_'.$date.'&spm=1.7274553.1997520841.1&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&q='.$kwd.'&suggest=0_2';
+                    $search_url = 'https://s.taobao.com/search?&initiative_id=tbindexz_'.$date.'&spm=1.7274553.1997520841.1&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&q='.$kwd.'&suggest=0_2';
                     if ($data['region']) {
                         $search_url .= '&loc=' . urlencode($data['region']);
                     } 
@@ -21,7 +21,7 @@ class keyword {
                     }
                     break;
                 case 'taobao2tmall':
-                    $search_url = 'http://s.taobao.com/search?spm=a230r.1.0.0.9nMSJu&initiative_id=tbindexz_'.$date.'&tab=mall&q='.$kwd.'&suggest=0_2'; 
+                    $search_url = 'https://s.taobao.com/search?spm=a230r.1.0.0.9nMSJu&initiative_id=tbindexz_'.$date.'&tab=mall&q='.$kwd.'&suggest=0_2'; 
                     if ($data['region']) {
                         $search_url .= '&loc=' . urlencode($data['region']);
                     } 
@@ -32,7 +32,7 @@ class keyword {
                     }
                     break;
                 case 'tmall':
-                    $search_url = 'http://list.tmall.com/search_product.htm?q='.$kwd.'&type=p&vmarket=&spm=3.7396704.a2227oh.d100&from=mallfp..pc_1_searchbutton';
+                    $search_url = 'https://list.tmall.com/search_product.htm?q='.$kwd.'&type=p&vmarket=&spm=3.7396704.a2227oh.d100&from=mallfp..pc_1_searchbutton';
                     if ($data['price_from']) {
                         $search_url .= '&start_price=' . $data['price_from'];
                     }
