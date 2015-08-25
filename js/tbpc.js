@@ -236,6 +236,11 @@ else {
                 this.click(".shop-name-wrap a");
             });
         }
+        else if (this.exists(".fst-cat-bd a")) {
+            this.wait(sleep_time, function(){
+                this.click(".fst-cat-bd a");
+            });
+        }
         else {
             //console.log('500');
             console.log('200-401');
@@ -264,6 +269,11 @@ else {
                 this.click("a[href*='taobao.com/category-']");
             });
         }
+        else if (this.exists("a[href^='//item.taobao.com/item.htm']")) {
+            this.wait(5000, function(){
+                this.click("a[href^='//item.taobao.com/item.htm']");
+            });
+        }
         else {
             console.log('200-406');
             casper.exit();
@@ -278,9 +288,9 @@ else {
                 aele[i].setAttribute('target', '_self');
             }
         });
-        if (this.exists("a[href^='http://item.taobao.com/item.htm']")) {
+        if (this.exists("a[href^='//item.taobao.com/item.htm']")) {
             this.wait(5000, function(){
-                this.click("a[href^='http://item.taobao.com/item.htm']");
+                this.click("a[href^='//item.taobao.com/item.htm']");
             });
         }
         else {
