@@ -163,20 +163,41 @@ class proxy {
 
         while ($index < ($total - 10)) {
             $proxy = $redis->lIndex($keyList, $index);
+            //是否取到proxy
+            if (!$proxy) {
+                $index = $redis->incr($keyShop);
+                $total = $redis->lLen($keyList);
+                $proxy = '';
+                continue;
+            }
+
             $proxyStatusKey = 'status_' . $proxy;
             $proxyStatusValue = intval($redis->get($proxyStatusKey));
             $proxyValid = ($proxyStatusValue <= 5) ? true : false;
-            if (!$proxy || !$proxyValid || !$this->_testProxy($proxy, $https)) {
+
+            //proxy是否被多次标记为不可用
+            if (!$proxyValid) {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
+                $proxy = '';
+                continue;
+            }
+
+            //proxy实测
+            if (!$this->_testProxy($proxy, $https)) {
+                $index = $redis->incr($keyShop);
+                $total = $redis->lLen($keyList);
+
+                //标记一次不可用
                 $redis->incr($proxyStatusKey);
                 $proxy = '';
+                continue;
             }
-            else {
-                //$index = $redis->incr($keyShop);
-                $redis->del($proxyStatusKey);
-                break;
-            }
+
+            //$index = $redis->incr($keyShop);
+            //proxy可用, 跳出循环
+            $redis->del($proxyStatusKey);
+            break;
         }
 
         $maxIndex = $redis->get($keyMax);
