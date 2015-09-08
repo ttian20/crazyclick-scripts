@@ -10,25 +10,25 @@ class proxy {
             $keySet = 'proxy_set_https';
             $keyMax = 'max_index_https';
             $keyProxyTimes = 'proxy_times_https';
-            $buffer = 700;
+            $buffer = 3000;
             $size = 200;
             $sleep = 2;
             //$url = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&area=%E4%B8%AD%E5%9B%BD&browser=1&protocol=2&method=1&an_ha=1&sp1=1&sp2=1&sort=0&dedup=1&format=text&sep=2';
             //$baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
-            $baseurl = 'http://118.244.186.157:63789/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
+            $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
+            //$baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
         }
         else {
             $keyList = 'proxy_list';
             $keySet = 'proxy_set';
             $keyMax = 'max_index';
             $keyProxyTimes = 'proxy_times_http';
-            $buffer = 500;
-            $size = 50;
+            $buffer = 200;
+            $size = 60;
             $sleep = 2;
             //$baseurl = 'http://www.kuaidaili.com/api/getproxy/?orderid=982669190774114&num='.$size.'&browser=1&protocol=1&method=1&an_ha=1&sort=2&dedup=1&format=text&sep=2&area=';
             //$baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
-            $baseurl = 'http://118.244.186.157:63789/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&https=1&filter=';
-            //$baseurl = 'http://src.06116.com/query.txt?min=30&count=' . $size . '&word=';
+            $baseurl = 'http://www.tkdaili.com/api/getiplist.aspx?vkey=2C777C9751352F3D8C99355ED68252A2&num='.$size.'&country=CN&high=1&style=2&filter=';
         }
 
         $redis = new Redis();
@@ -37,6 +37,10 @@ class proxy {
         if ($redis->exists($keyList) && $redis->exists($keyMax) && (($redis->lLen($keyList) - $redis->get($keyMax)) >= $buffer)) {
             $redis->close();
             return ;
+        }
+
+        if (!$redis->exists($keyMax)) {
+            $redis->set($keyMax, '1');
         }
 
         $userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.2; .NET4.0C; .NET4.0E)';
@@ -165,10 +169,12 @@ class proxy {
             if (!$proxy || !$proxyValid || !$this->_testProxy($proxy, $https)) {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
+                $this->setInvalid($proxy);
                 $proxy = '';
             }
             else {
                 //$index = $redis->incr($keyShop);
+                $this->setValid($proxy);
                 break;
             }
         }
