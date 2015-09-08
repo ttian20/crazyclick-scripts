@@ -169,12 +169,12 @@ class proxy {
             if (!$proxy || !$proxyValid || !$this->_testProxy($proxy, $https)) {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
-                $this->setInvalid($proxy);
+                $redis->incr($proxyStatusKey);
                 $proxy = '';
             }
             else {
                 //$index = $redis->incr($keyShop);
-                $this->setValid($proxy);
+                $redis->del($proxyStatusKey);
                 break;
             }
         }
