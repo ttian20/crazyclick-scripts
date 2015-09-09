@@ -168,6 +168,7 @@ class proxy {
                 $index = $redis->incr($keyShop);
                 $total = $redis->lLen($keyList);
                 $proxy = '';
+                sleep(60);
                 continue;
             }
 
