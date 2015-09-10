@@ -174,7 +174,7 @@ class proxy {
 
             $proxyStatusKey = 'status_' . $proxy;
             $proxyStatusValue = intval($redis->get($proxyStatusKey));
-            $proxyValid = ($proxyStatusValue <= 5) ? true : false;
+            $proxyValid = ($proxyStatusValue <= 40) ? true : false;
 
             //proxy是否被多次标记为不可用
             if (!$proxyValid) {
