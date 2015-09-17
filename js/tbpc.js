@@ -18,7 +18,7 @@ var sleep_time = parseInt(casper.cli.get(3)) * 1000;
 var shop_type = '';
 
 var search_times = 0;
-var scroll_wait = 2000;
+var scroll_wait = 1500;
 
 casper.start(search_url);
 
