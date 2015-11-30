@@ -224,7 +224,7 @@ function crawler() {
         
         	$search_url = $keyword->buildSearchUrl($data);
         	$search_selector = "div.p-name a[href*='" . $nid . "']";
-        	$next_selector = "a.next";
+        	$next_selector = "a.fp-next";
         
         	$cmd = "/usr/bin/casperjs " . $jsfile . " --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
         }
