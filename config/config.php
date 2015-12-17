@@ -7,8 +7,8 @@ define('DB_PASSWD', 'txg19831210');
 
 define('MQ_HOST', '10.168.45.191');
 define('MQ_PORT', 5672);
-define('MQ_LOGIN', 'guest');
-define('MQ_PASSWD', 'guest');
+define('MQ_LOGIN', 'admin');
+define('MQ_PASSWD', 'txg19831210');
 define('MQ_VHOST', '/kwd');
 
 define('REDIS_HOST', '10.168.45.191');
