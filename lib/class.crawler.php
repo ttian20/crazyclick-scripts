@@ -32,7 +32,8 @@ class crawler {
             $data['price_to'] = floor($priceStr[0]) + 10;
         }
         $data['date'] = date('Ymd');
-        $data['kwd'] = urlencode($data['kwd']);
+        //$data['kwd'] = urlencode($data['kwd']);
+        $data['kwd'] = urlencode(mb_convert_encoding($data['kwd'], 'UTF-8', 'GBK')),
 
         $this->nid = $data['nid'];
         $selected = array();
@@ -94,7 +95,7 @@ class crawler {
             $rand = rand(0, 8);
             $shopId = $shopIdArr[$rand];
             echo $shopId . "\n";
-            $this->proxy = $proxyObj->getProxy($shopId);
+            $this->proxy = $proxyObj->getProxy($shopId, true);
             if ('' == $this->proxy) {
                 echo "no proxy, sleep 20s\n";
                 sleep(20);
@@ -113,9 +114,27 @@ class crawler {
             //echo $page."\n";
             $minPage = $page;
             $selected = $tmpdata;
-            if ($page > 0 && $page < 8) {
+            if ($page > 0 && $page < 5) {
                 $this->specify($selected, $minPage);
                 return ;
+            }
+            sleep(1);
+
+            //单纯价格作搜索条件
+            $tmpdata = $data;
+            unset($tmpdata['region']);
+            $url = $this->kwdObj->buildSearchUrl($tmpdata);
+            $page = (int)$this->getPage($url);
+            $this->update($tmpdata, $page);
+            //print_r($tmpdata);
+            //echo $page."\n";
+            if ($minPage == -1 && $page > 0) {
+                $minPage = $page;
+                $selected = $tmpdata;
+            }
+            if ($page > 0 && $page < $minPage) {
+                $minPage = $page;
+                $selected = $tmpdata;
             }
             sleep(1);
 
@@ -135,24 +154,6 @@ class crawler {
             sleep(1);
             //print_r($tmpdata);
             //echo $page."\n";
-
-            //单纯价格作搜索条件
-            $tmpdata = $data;
-            unset($tmpdata['region']);
-            $url = $this->kwdObj->buildSearchUrl($tmpdata);
-            $page = (int)$this->getPage($url);
-            $this->update($tmpdata, $page);
-            //print_r($tmpdata);
-            //echo $page."\n";
-            if ($minPage == -1 && $page > 0) {
-                $minPage = $page;
-                $selected = $tmpdata;
-            }
-            if ($page > 0 && $page < $minPage) {
-                $minPage = $page;
-                $selected = $tmpdata;
-            }
-            sleep(1);
 
             //单纯地区作搜索条件
             $tmpdata = $data;
@@ -203,6 +204,8 @@ class crawler {
         $curl = new Curl(); 
         echo $url . "\n";
         $curl->get($url, array(), $this->proxy);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setOpt(CURLOPT_SSL_VERIFYHOST, false);
         $curl->setUserAgent($this->getUserAgent());
         echo "http code is: " . $curl->http_status_code . "\n";
         echo $this->proxy . "\n";
@@ -266,7 +269,7 @@ class crawler {
         }
         else {
             //echo $curl->http_status_code . "\n";
-            //echo $curl->response . "\n";
+            echo $curl->response . "\n";
             //print_r($curl->response_headers);
             return -1;
         }
@@ -295,6 +298,7 @@ class crawler {
         $jsfile = JS_DIR . 'tm.js';
     
         $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$this->proxy." --output-encoding=gbk --script-encoding=gbk \"".$url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\"";
+        echo $cmd . "\n";
         $output = system($cmd);
 
         $len = strlen($output);
