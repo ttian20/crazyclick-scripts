@@ -6,13 +6,15 @@ class keyword {
 
     public function buildSearchUrl($data) {
         $kwd = $data['kwd'];
+        $region = iconv("GBK", "UTF-8", $data['region']);
         if (in_array($data['platform'], array('tbpc', 'tbad'))) {
             $date = $data['date'];
             switch ($data['path']) {
                 case 'taobao':
-                    $search_url = 'https://s.taobao.com/search?&initiative_id=tbindexz_'.$date.'&spm=1.7274553.1997520841.1&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&q='.$kwd.'&suggest=0_2';
+                    //$search_url = 'https://s.taobao.com/search?&initiative_id=tbindexz_'.$date.'&spm=1.7274553.1997520841.1&sourceId=tb.index&search_type=item&ssid=s5-e&commend=all&q='.$kwd.'&suggest=0_2';
+                    $search_url = 'https://s.taobao.com/search?q='.$kwd.'&imgfile=&commend=all&ssid=s5-e&search_type=item&sourceId=tb.index&spm=a21bo.7724922.8452-taobao-item.1&ie=utf8&initiative_id=tbindexz_' . $date;
                     if ($data['region']) {
-                        $search_url .= '&loc=' . urlencode($data['region']);
+                        $search_url .= '&loc=' . urlencode($region);
                     } 
                     if ($data['price_from'] || $data['price_to']) {
                         $price_from = $data['price_from'] ? $data['price_from'] : '';
@@ -21,9 +23,10 @@ class keyword {
                     }
                     break;
                 case 'taobao2tmall':
-                    $search_url = 'https://s.taobao.com/search?spm=a230r.1.0.0.9nMSJu&initiative_id=tbindexz_'.$date.'&tab=mall&q='.$kwd.'&suggest=0_2'; 
+                    //$search_url = 'https://s.taobao.com/search?spm=a230r.1.0.0.9nMSJu&initiative_id=tbindexz_'.$date.'&tab=mall&q='.$kwd.'&suggest=0_2'; 
+                    $search_url = 'https://s.taobao.com/search?spm=a230r.1.1998181369.d4919860.8AtPaA&q='.$kwd.'&imgfile=&commend=all&ssid=s5-e&search_type=item&sourceId=tb.index&ie=utf8&initiative_id=tbindexz_'.$date.'&tab=mall';
                     if ($data['region']) {
-                        $search_url .= '&loc=' . urlencode($data['region']);
+                        $search_url .= '&loc=' . urlencode($region);
                     } 
                     if ($data['price_from'] || $data['price_to']) {
                         $price_from = $data['price_from'] ? $data['price_from'] : '';

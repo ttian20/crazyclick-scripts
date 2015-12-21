@@ -84,7 +84,7 @@ function crawler() {
         $row = $result->fetch_object();
     	$result->close();
 
-        $kwd = urlencode($obj->kwd);
+        $kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
         $nid = $obj->nid;
         $shop_type = $obj->shop_type;
         $date = date('Ymd');
@@ -188,7 +188,7 @@ function crawler() {
         elseif ('tbmobi' == $platform) {
         	$path = 'mobi';
         	$data = array(
-        	    'kwd' => urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
+        	    'kwd' => $kwd,
         	    'platform' => $platform,
         	);
         
@@ -207,7 +207,7 @@ function crawler() {
         elseif ('jdpc' == $platform) {
             $path = 'jdpc';
         	$data = array(
-        	    'kwd' => urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
+        	'kwd' => $kwd,
                 'path' => 'jdpc',
                 'price_from' => $row->price_from,
                 'price_to' => $row->price_to,
