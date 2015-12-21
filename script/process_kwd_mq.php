@@ -84,7 +84,7 @@ function crawler() {
         $row = $result->fetch_object();
     	$result->close();
 
-        $kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK')),
+        $kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK'));
         $nid = $obj->nid;
         $shop_type = $obj->shop_type;
         $date = date('Ymd');
