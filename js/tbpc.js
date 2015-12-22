@@ -25,10 +25,6 @@ casper.wait(scroll_wait);
 casper.thenEvaluate(function(){
     document.body.scrollTop  = 0;
 });
-casper.wait(scroll_wait);
-casper.thenEvaluate(function(){
-    document.body.scrollTop  += 900;
-});
 
 casper.thenOpen(search_url);
 
@@ -55,14 +51,10 @@ function search(flag) {
     casper.thenEvaluate(function(){
         document.body.scrollTop  += 900;
     });
-    casper.wait(scroll_wait);
-    casper.thenEvaluate(function(){
-        document.body.scrollTop  += 900;
-    });
+
     casper.wait(scroll_wait, function(){
         this.scrollToBottom();
     });
-    casper.wait(scroll_wait);
 
     casper.then(function(){
         if (this.exists(search_selector)) {
