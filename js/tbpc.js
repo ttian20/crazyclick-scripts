@@ -20,7 +20,17 @@ var shop_type = '';
 var search_times = 0;
 var scroll_wait = 1500;
 
-casper.start(search_url);
+casper.start("https://www.taobao.com");
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  = 0;
+});
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop  += 900;
+});
+
+casper.thenOpen(search_url);
 
 search(0);
 function search(flag) {
