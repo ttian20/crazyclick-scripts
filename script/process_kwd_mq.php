@@ -84,7 +84,9 @@ function crawler() {
         $row = $result->fetch_object();
     	$result->close();
 
-        $kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK'));
+        //$kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK'));
+        //$kwd = mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK');
+        $kwd = $obj->kwd;
         $nid = $obj->nid;
         $shop_type = $obj->shop_type;
         $date = date('Ymd');
@@ -126,7 +128,7 @@ function crawler() {
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
         	
         	    //$cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --ignore-ssl-errors=true --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
-        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$kwd."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
         	}
         	elseif ($rand <= $path2) {
         	    //taobao search tmall tab
@@ -154,7 +156,7 @@ function crawler() {
         	    $next_selector = 'a[trace="srp_bottom_pagedown"]';
         	
         	    //$cmd = "/usr/bin/casperjs --output-encoding=gbk --script-encoding=gbk --ignore-ssl-errors=true --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
-        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$kwd."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
         	}
         	else {
         	    //tmall search
@@ -182,10 +184,11 @@ function crawler() {
         	    $search_selector = "a[href*='id=".$nid."']";
         	    $next_selector = "a.ui-page-s-next";
         
-        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$search_url."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
+        	    $cmd = "/usr/bin/casperjs " . $jsfile . " --ignore-ssl-errors=true --proxy=".$proxy." --output-encoding=gbk --script-encoding=gbk \"".$kwd."\" "." \"" . $search_selector . "\" " . "\"" . $next_selector . "\" " . $sleep_time . " \"" . $ua . "\"";
         	}
         }
         elseif ('tbmobi' == $platform) {
+            $kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK'));
         	$path = 'mobi';
         	$data = array(
         	    'kwd' => $kwd,
@@ -205,6 +208,7 @@ function crawler() {
         	$cmd = "/usr/bin/casperjs --proxy=".$proxy." " . $jsfile . " \"".$search_url."\" "." \"" . $search_selector . "\" " . $sleep_time ;
         }
         elseif ('jdpc' == $platform) {
+            $kwd = urlencode(mb_convert_encoding($obj->kwd, 'UTF-8', 'GBK'));
             $path = 'jdpc';
         	$data = array(
         	'kwd' => $kwd,
@@ -354,6 +358,14 @@ function crawler() {
 
             if ('500' == $status_code) {
                 $proxyObj->setInvalid($proxy);
+            }
+
+            if ('501' == $status_code) {
+                //Loading resource failed with status=fail: https://sec.taobao.com/que
+            }
+
+            if ('502' == $status_code) {
+                //login.taobao.com
             }
 
             if ('404' == $status_code) {

@@ -3,7 +3,7 @@ var casper = require('casper').create({
     logLevel: 'debug',
     timeout: 600000,
     pageSettings: {
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'
+        userAgent: 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.2; .NET4.0C; .NET4.0E)'
     }
 });
 
@@ -11,7 +11,7 @@ var title;
 var target;
 var res;
 
-var search_url = casper.cli.get(0);
+var kwd = casper.cli.get(0);
 var search_selector = casper.cli.get(1);
 var next_selector = casper.cli.get(2)
 var sleep_time = parseInt(casper.cli.get(3)) * 1000;
@@ -19,14 +19,31 @@ var shop_type = '';
 
 var search_times = 0;
 var scroll_wait = 1500;
+var current_url = '';
 
 casper.start("https://www.taobao.com");
 casper.wait(scroll_wait);
 casper.thenEvaluate(function(){
-    document.body.scrollTop  = 0;
+    document.body.scrollTop = 0;
 });
 
-casper.thenOpen(search_url);
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop += 900;
+});
+
+casper.wait(scroll_wait);
+casper.thenEvaluate(function(){
+    document.body.scrollTop = 0;
+});
+
+casper.thenEvaluate(function(q){
+    document.getElementById("q").value = q;
+}, kwd);
+
+casper.then(function(){
+    this.click("#J_TSearchForm > div > .btn-search");
+})
 
 search(0);
 function search(flag) {
@@ -45,6 +62,19 @@ function search(flag) {
     casper.wait(scroll_wait);
     casper.thenEvaluate(function(){
         document.body.scrollTop  += 900;
+    });
+
+    casper.then(function(){
+        var current_url = this.getCurrentUrl();
+        if (current_url.indexOf('https://www.taobao.com') == 0) {
+            console.log('501');
+            casper.exit();
+        }
+
+        if (current_url.indexOf('https://login.taobao.com/member/login') == 0) {
+            console.log('502');
+            casper.exit();
+        }
     });
 
     casper.wait(scroll_wait);
